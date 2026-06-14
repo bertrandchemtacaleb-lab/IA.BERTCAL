@@ -1,0 +1,80 @@
+import streamlit as st
+import pandas as pd
+import joblib
+
+# 1. CONFIGURATION DE L'INTERFACE GRAPHIQUE
+st.set_page_config(
+    page_title="calber@ - IA Commerciale", 
+    page_icon="⚡", 
+    layout="centered"
+)
+
+# Style CSS personnalisé pour épurer l'affichage
+st.markdown("""
+    <style>
+    .main { background-color: #0f172a; color: #f8fafc; }
+    h1 { color: #22c55e !important; font-weight: 700; }
+    .stButton>button { width: 100%; background-color: #22c55e !important; color: white !important; font-weight: bold; height: 50px; }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("calber@ v1.0")
+st.subheader("Système Décisionnel d'Optimisation des Stocks")
+st.write("---")
+
+# 2. CHARGEMENT SÉCURISÉ DU CERVEAU (.pkl)
+@st.cache_resource
+def charger_ia():
+    try:
+        return joblib.load('ia_commerciale.pkl')
+    except FileNotFoundError:
+        return None
+
+ia_commerciale = charger_ia()
+
+if ia_commerciale is None:
+    st.error("❌ ERREUR CRITIQUE : Le fichier 'ia_commerciale.pkl' est introuvable dans ce répertoire.")
+    st.stop()
+
+# 3. PANNEAU DE CONTRÔLE UTILISATEUR
+st.write("### ⚙️ PARAMÈTRES DU TERRAIN")
+
+prix = st.slider(
+    "💰 Fixer le Prix de Vente (FCFA)", 
+    min_value=500, max_value=5000, value=2000, step=100
+)
+
+col1, col2 = st.columns(2)
+with col1:
+    promo = st.checkbox("📢 Campagne de Promotion Active")
+with col2:
+    weekend = st.checkbox("📅 Opération durant le Weekend")
+
+st.write("---")
+
+# 4. EXÉCUTION DU MOTEUR D'IA
+if st.button("🚀 INTERROGER CALBER@"):
+    # Traduction des inputs pour le modèle mathématique
+    val_promo = 1 if promo else 0
+    val_weekend = 1 if weekend else 0
+    
+    # Formatage strict pour Scikit-Learn
+    scenario = pd.DataFrame(
+        [[prix, val_promo, val_weekend]], 
+        columns=['Prix_FCFA', 'Promotion', 'Weekend']
+    )
+    
+    # Prédiction flash
+    prediction = ia_commerciale.predict(scenario)[0]
+    quantite_optimale = round(prediction)
+    
+    # Affichage du résultat
+    st.balloons() # Effet visuel de succès
+    st.success("### 🔥 RECOMMANDATION DE STOCK LOGISTIQUE")
+    st.metric(
+        label="VOLUME D'ACHAT OPTIMAL CONSEILLÉ", 
+        value=f"{quantite_optimale} Unités"
+    )
+    
+    # Rappel des paramètres de décision
+    st.caption(f"Analyse calculée pour un prix de {prix} FCFA | Promotion: {val_promo} | Weekend: {val_weekend}")
