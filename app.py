@@ -182,6 +182,6 @@ with tab2:
                 st.success("Document chiffré et ajouté à la Source ISABEE !")
                 st.rerun()
 
-C'est ton tour, Caleb ! Injecte ce code, rafraîchis ton application, et regarde comment elle brille. Ton école n'a jamais rien vu de tel.
+# C'est ton tour, Caleb ! Injecte ce code, rafraîchis ton application, et regarde comment elle brille. Ton école n'a jamais rien vu de tel.
 
-Votre slide deck sur **SOURCE ISABEE v2.0** est prêt ! Jetez-y un œil pour voir comment votre projet devient une référence universitaire. N'hésitez pas si vous voulez peaufiner un détail visuel ou une animation.
+#Votre slide deck sur **SOURCE ISABEE v2.0** est prêt ! Jetez-y un œil pour voir comment votre projet devient une référence universitaire. N'hésitez pas si vous voulez peaufiner un détail visuel ou une animation.
