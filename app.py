@@ -1,56 +1,41 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import difflib  # Pour la recherche intelligente tolérante aux fautes d'orthographe
+import difflib
 from datetime import datetime
 
 # ==============================================================================
-# 1. ARCHITECTURE ET CONFIGURATION NEXT-GEN (STYLING VERCEL / LINEAR / APPLE)
+# 1. ARCHITECTURE VISUELLE & GRAPHISME PREMIUM (STYLE LINEAR / STRIPE)
 # ==============================================================================
 st.set_page_config(
-    page_title="SOURCE ISABEE — Plateforme Premium",
+    page_title="SOURCE ISABEE — La Mémoire Académique de l'Excellence",
     page_icon="💎",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Initialisation du choix du thème (Sombre/Clair) dans la session
-if 'theme_mode' not in st.session_state:
-    st.session_state.theme_mode = "Sombre"
-
-# Injection de styles CSS avancés (Glassmorphism, animations et variables globales)
-if st.session_state.theme_mode == "Sombre":
-    bg_gradient = "linear-gradient(135deg, #021A11 0%, #032418 50%, #010D08 100%)"
-    card_bg = "rgba(255, 255, 255, 0.03)"
-    text_color = "#FFFFFF"
-    border_color = "rgba(16, 185, 129, 0.2)"
-    sidebar_bg = "rgba(2, 26, 17, 0.95)"
-else:
-    bg_gradient = "linear-gradient(135deg, #F0FDF4 0%, #E8F5E9 50%, #FFFFFF 100%)"
-    card_bg = "rgba(0, 0, 0, 0.02)"
-    text_color = "#0B2F21"
-    border_color = "rgba(16, 185, 129, 0.4)"
-    sidebar_bg = "rgba(240, 253, 244, 0.95)"
-
-st.markdown(f"""
+# Injection CSS pour le Glassmorphism, animations néon et police Plus Jakarta Sans
+st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
     
-    .stApp {{
-        background: {bg_gradient};
-        color: {text_color};
+    /* Fond de page dégradé sombre institutionnel */
+    .stApp {
+        background: linear-gradient(135deg, #021A11 0%, #032418 50%, #010D08 100%);
+        color: #FFFFFF;
         font-family: 'Plus Jakarta Sans', sans-serif;
-    }}
+    }
     
-    [data-testid="stSidebar"] {{
-        background: {sidebar_bg} !important;
+    /* Barre latérale personnalisée */
+    [data-testid="stSidebar"] {
+        background: rgba(2, 26, 17, 0.95) !important;
         backdrop-filter: blur(20px);
-        border-right: 1px solid {border_color};
-    }}
+        border-right: 1px solid rgba(16, 185, 129, 0.2);
+    }
     
-    /* Titre animé ultra-brillant */
-    .hero-title {{
-        font-size: 4.5rem !important;
+    /* Grand Titre Neon Glow */
+    .hero-title {
+        font-size: 4rem !important;
         font-weight: 800;
         background: linear-gradient(90deg, #10B981, #34D399, #A7F3D0, #10B981);
         background-size: 200% auto;
@@ -58,408 +43,389 @@ st.markdown(f"""
         -webkit-text-fill-color: transparent;
         text-align: center;
         animation: shine 4s linear infinite;
-        margin-bottom: 0px;
-        letter-spacing: -2px;
-    }}
+        margin-bottom: 5px;
+        letter-spacing: -1px;
+    }
     
-    @keyframes shine {{
-        to {{ background-position: 200% center; }}
-    }}
+    @keyframes shine {
+        to { background-position: 200% center; }
+    }
     
-    /* Cartes Glassmorphism avancées */
-    .glass-card {{
-        background: {card_bg};
+    /* Cartes d'épreuves en Glassmorphism avancé */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.02);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid {border_color};
-        border-radius: 24px;
-        padding: 30px;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }}
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
     
-    .glass-card:hover {{
-        transform: translateY(-5px);
+    .glass-card:hover {
         border-color: #10B981;
-        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15);
-    }}
+        background: rgba(16, 185, 129, 0.05);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15);
+    }
     
-    /* Boutons de l'interface */
-    .stButton>button {{
-        background: linear-gradient(90deg, #059669 0%, #10B981 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 14px !important;
-        padding: 12px 24px !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
-        transition: 0.3s !important;
-    }}
+    /* Badges de l'interface */
+    .badge-premium { background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px; }
+    .badge-free { background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-type { background: rgba(255, 255, 255, 0.08); color: #E5E7EB; padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
     
-    .stButton>button:hover {{
-        transform: scale(1.02);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6) !important;
-    }}
-    
-    /* Badges de métadonnées */
-    .badge {{
-        background: rgba(16, 185, 129, 0.15);
-        color: #10B981;
-        padding: 6px 14px;
-        border-radius: 100px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }}
+    /* Onglets de navigation */
+    .stTabs [data-baseweb="tab"] {
+        color: #A7F3D0 !important;
+        font-weight: 600;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #10B981 !important;
+        border-bottom-color: #10B981 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. INITIALISATION DU MOTEUR DE DONNÉES (SQLITE SIMULATION VIA SESSION STATE)
+# 2. CONFIGURATION DES DONNÉES ET DES STRUCTURES (LES 16 FILIÈRES D'ISABEE)
 # ==============================================================================
-if 'db_initialized' not in st.session_state:
-    # Base principale des documents académiques
-    st.session_state.documents = pd.DataFrame([
-        {"id": 1, "Matière": "Thermodynamique Appliquée", "Cycle": "Cycle Ingénieur", "Niveau": "Ingénieur 4", "Année": "2025", "Type": "Examen Semestriel", "Filière": "Génie Énergétique", "Enseignant": "Dr. Eko", "Taille": "1.2 Mo", "Date": "12/03/2026", "Téléchargements": 142, "Note": 5, "Favori": False},
-        {"id": 2, "Matière": "Botanique et Structure des Bois", "Cycle": "Cycle Ingénieur", "Niveau": "Ingénieur 1", "Année": "2024", "Type": "Contrôle Continu", "Filière": "Génie du Bois", "Enseignant": "Pr. Ndongo", "Taille": "850 Ko", "Date": "05/01/2026", "Téléchargements": 98, "Note": 4, "Favori": True},
-        {"id": 3, "Matière": "Hydrologie Générale", "Cycle": "Licence en Sciences de l'Ingénieur", "Niveau": "Licence 3", "Année": "2025", "Type": "Examen Semestriel", "Filière": "Génie de l'Eau", "Enseignant": "Dr. Bella", "Taille": "2.1 Mo", "Date": "18/04/2026", "Téléchargements": 210, "Note": 5, "Favori": False},
-        {"id": 4, "Matière": "Modélisation des Écosystèmes Forestiers", "Cycle": "Master I", "Niveau": "Master 1", "Année": "2026", "Type": "Travaux Pratiques", "Filière": "Environnement", "Enseignant": "Membres du département", "Taille": "4.3 Mo", "Date": "14/06/2026", "Téléchargements": 34, "Note": 3, "Favori": False}
+FILIERES = [
+    "Production Végétale", "Production Animale", "Protection des Cultures",
+    "Opérations Forestières", "Aménagement Forestier", 
+    "Gestion de la Faune, des Aires Protected et Écotourisme",
+    "Sylviculture et Plantations Forestières", "Sciences du Bois",
+    "Techniques Spécialisées en Transformation du Bois", "Génie de l'Environnement",
+    "Systèmes Agro-Sylvo-Pastoraux et Bioénergies", "Bioénergies et Environnement",
+    "Génie Énergétique", "Agroéconomie", "Politique et Gouvernance Forestière",
+    "Études d'Impact Environnemental et Social"
+]
+
+# Initialisation de la base de données interne (Simulation SQLite / Mémoire persistante)
+if 'db' not in st.session_state:
+    st.session_state.db = pd.DataFrame([
+        {
+            "id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4",
+            "Matière": "Thermodynamique Technique et Transfert de Chaleur", "Enseignant": "Dr. Eko",
+            "Type": "Examen", "Année": "2024-2025", "Premium": False, "Fichier": "Sujet_Thermo_2025.pdf",
+            "Téléchargements": 142, "Date_Ajout": "12/02/2026", "Note": 5, "Favori": False
+        },
+        {
+            "id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4",
+            "Matière": "Thermodynamique Appliquée [CORRIGÉ PREMIUM]", "Enseignant": "Dr. Eko",
+            "Type": "Examen", "Année": "2024-2025", "Premium": True, "Fichier": "Corrige_Thermo_2025.pdf",
+            "Téléchargements": 89, "Date_Ajout": "15/02/2026", "Note": 5, "Favori": False
+        },
+        {
+            "id": 3, "Cycle": "Licence Sciences de l'Ingénieur", "Filière": "Sciences du Bois", "Niveau": "L3",
+            "Matière": "Physique et Mécanique des Matériaux Ligneux", "Enseignant": "Pr. Ndongo",
+            "Type": "CC", "Année": "2023-2024", "Premium": False, "Fichier": "CC_Mecanique_Bois.pdf",
+            "Téléchargements": 64, "Date_Ajout": "05/01/2026", "Note": 4, "Favori": False
+        },
+        {
+            "id": 4, "Cycle": "Master II", "Filière": "Bioénergies et Environnement", "Niveau": "M2",
+            "Matière": "Modélisation des Systèmes Énergétiques Biomasse", "Enseignant": "Dr. Bella",
+            "Type": "Rattrapage", "Année": "2024-2025", "Premium": True, "Fichier": "Biomasse_M2_Corrige.pdf",
+            "Téléchargements": 31, "Date_Ajout": "28/05/2026", "Note": 3, "Favori": False
+        }
     ])
     
-    # Historique utilisateur & Statistiques globales
-    st.session_state.total_downloads = 484
-    st.session_state.authenticated = False
-    st.session_state.user_matricule = ""
-    st.session_state.user_role = "Étudiant"
-    st.session_state.comments = {1: ["Très bon sujet, proche de la session de rattrapage."], 2: ["Erreur de frappe à la question 3."]}
-    st.session_state.db_initialized = True
+    st.session_state.is_premium_user = False
+    st.session_state.global_downloads = 326
+    st.session_state.comments_db = {1: ["Sujet très complet !"], 2: ["Le corrigé m'a sauvé pour les révisions de rattrapage."]}
 
 # ==============================================================================
-# 3. SIDEBAR INTELLIGENTE : LOGOS, AUTHENTIFICATION ET FILTRES DYNAMIQUES
+# 3. BARRE LATÉRALE : IDENTITÉ INTERACTIVE & FILTRES DE NOUVELLE GÉNÉRATION
 # ==============================================================================
 with st.sidebar:
-    # Zone des logos officiels réutilisables
+    # Logo placeholders requis par la charte officielle
     st.markdown("""
-        <div style="display: flex; gap: 12px; margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 18px; border: 1px dashed rgba(16, 185, 129, 0.3);">
-            <div style="flex: 1; text-align: center; color: #10B981; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px 5px;">LOGO<br>ISABEE</div>
-            <div style="flex: 1; text-align: center; color: #10B981; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px 5px;">UNIVERSITÉ<br>BERTOUA</div>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="flex: 1; text-align: center; color: #10B981; font-size: 10px; font-weight: bold; border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 10px 2px;">[ LOGO ISABEE ]</div>
+            <div style="flex: 1; text-align: center; color: #10B981; font-size: 10px; font-weight: bold; border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 10px 2px;">[ U-BERTOUA ]</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Contrôle de Thème Lumineux / Sombre
-    st.session_state.theme_mode = st.selectbox("Thème Visuel", ["Sombre", "Clair"])
-    
-    st.markdown("### 🔐 ESPACE IDENTIFICATION")
-    if not st.session_state.authenticated:
-        matricule = st.text_input("Matricule Étudiant (Ex: 23U245)", value="")
-        role_select = st.selectbox("Niveau d'accès", ["Étudiant", "Délégué Académique", "Administrateur"])
-        if st.button("S'AUTHENTIFIER"):
-            if matricule:
-                st.session_state.authenticated = True
-                st.session_state.user_matricule = matricule.upper()
-                st.session_state.user_role = role_select
-                st.rerun()
-    else:
-        st.markdown(f"🟢 **Session active :** `{st.session_state.user_matricule}`")
-        st.markdown(f"Privilège : **{st.session_state.user_role}**")
-        if st.button("Se déconnecter"):
-            st.session_state.authenticated = False
-            st.rerun()
-            
-    st.markdown("---")
-    st.markdown("### 🗂️ NAVIGATION ACADÉMIQUE")
-    cycle_choisi = st.radio(
-        "Sélectionnez le cycle :",
-        ["Licence en Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"]
-    )
-    
-    # Moteur de filtrage dynamique adaptatif selon le cycle
-    if cycle_choisi == "Licence en Sciences de l'Ingénieur":
-        niveaux_disponibles = ["Licence 1", "Licence 2", "Licence 3"]
-    elif cycle_choisi == "Cycle Ingénieur":
-        niveaux_disponibles = ["Ingénieur 1", "Ingénieur 2", "Ingénieur 3", "Ingénieur 4", "Ingénieur 5"]
-    elif cycle_choisi == "Master I":
-        niveaux_disponibles = ["Master 1"]
-    else:
-        niveaux_disponibles = ["Master 2"]
+    # BANNER D'ABONNEMENT BUSINESS FREEMIUM (300 FCFA)
+    if not st.session_state.is_premium_user:
+        st.markdown("""
+            <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 18px; border-radius: 14px; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-bottom: 20px;">
+                <h4 style="margin: 0; color: white; font-weight: 800; font-size:1.1rem;">ACCÈS PREMIUM 👑</h4>
+                <p style="margin: 4px 0; font-size: 0.8rem; color: #E6F4EA;">Débloque tous les corrigés d'épreuves</p>
+                <div style="font-size: 1.6rem; font-weight: 900; color: #FFFFFF; margin: 8px 0;">300 FCFA <span style="font-size: 0.8rem; font-weight: 400; opacity: 0.9;">/ sem</span></div>
+                <p style="font-size: 0.7rem; color: #E6F4EA; margin: 0;">Achetez votre clé auprès de Caleb Bertrand</p>
+            </div>
+        """, unsafe_allow_html=True)
         
-    niveaux_choisis = st.multiselect("Filtrer par niveau :", niveaux_disponibles, default=niveaux_disponibles)
+        activation_key = st.text_input("Saisir la clé Premium reçue :", type="password")
+        if st.button("Activer l'accès Premium"):
+            if activation_key.lower() == "isabee300":
+                st.session_state.is_premium_user = True
+                st.success("Mode PREMIUM activé avec succès ! ✨")
+                st.rerun()
+            else:
+                st.error("Clé invalide. Payez 300F à Caleb.")
+    else:
+        st.markdown("""
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+                <span style="color: #34D399; font-weight: bold;">👑 ABONNEMENT PREMIUM ACTIF</span>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Simuler Compte Gratuit (Test)"):
+            st.session_state.is_premium_user = False
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("### 🗛 FILTRES AVANCÉS")
     
-    st.markdown("### 🔍 FILTRES AVANCÉS DE NOUVELLE GÉNÉRATION")
-    filtre_annee = st.selectbox("Année de session", ["Toutes", "2026", "2025", "2024", "2023"])
-    filtre_type = st.selectbox("Type d'évaluation", ["Tous", "Examen Semestriel", "Contrôle Continu", "Travaux Pratiques", "Rattrapage"])
-    filtre_filiere = st.selectbox("Filière", ["Toutes", "Génie Énergétique", "Génie du Bois", "Génie de l'Eau", "Agriculture", "Environnement"])
+    # Filtre 1 : Le Cycle
+    filter_cycle = st.selectbox("Cycle d'études", ["Tous", "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+    
+    # Filtre 2 : La Filière (Les 16 filières officielles de l'ISABEE)
+    filter_filiere = st.selectbox("Filière Académique", ["Toutes"] + FILIERES)
+    
+    # Filtre 3 : Cartographie dynamique intelligente du niveau selon le cycle choisi
+    if filter_cycle == "Licence Sciences de l'Ingénieur":
+        levels_options = ["L1", "L2", "L3"]
+    elif filter_cycle == "Cycle Ingénieur":
+        levels_options = ["Ing1", "Ing2", "Ing3", "Ing4", "Ing5"]
+    elif filter_cycle == "Master I":
+        levels_options = ["M1"]
+    elif filter_cycle == "Master II":
+        levels_options = ["M2"]
+    else:
+        levels_options = ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5", "M1", "M2"]
+        
+    filter_niveau = st.multiselect("Niveau d'études", levels_options, default=levels_options)
+    
+    # Filtres secondaires
+    filter_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
+    filter_annee = st.selectbox("Année Académique", ["Toutes", "2025-2026", "2024-2025", "2023-2024", "2022-2023"])
 
 # ==============================================================================
-# 4. PAGE D'ACCUEIL : HERO SECTION SPECTACULAIRE ET COMPTEURS DYNAMIQUES
+# 4. EXÉCUTION DU MOTEUR DE SÉLECTION & RECHERCHE INTÉLLIGENTE IA (TOLÉRANCE DE FAUTES)
+# ==============================================================================
+df_filtered = st.session_state.db.copy()
+
+if filter_cycle != "Tous":
+    df_filtered = df_filtered[df_filtered['Cycle'] == filter_cycle]
+if filter_filiere != "Toutes":
+    df_filtered = df_filtered[df_filtered['Filière'] == filter_filiere]
+    
+df_filtered = df_filtered[df_filtered['Niveau'].isin(filter_niveau)]
+
+if filter_type != "Tous":
+    df_filtered = df_filtered[df_filtered['Type'] == filter_type]
+if filter_annee != "Toutes":
+    df_filtered = df_filtered[df_filtered['Année'] == filter_annee]
+
+# ==============================================================================
+# 5. CONCEPTION DU CONTENU PRINCIPAL DE L'APPLICATION
 # ==============================================================================
 st.markdown("<h1 class='hero-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 1.3rem; font-weight: 300; letter-spacing: 2px; color: #34D399; margin-bottom: 40px;'>\"La mémoire académique de l'excellence\"</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; opacity: 0.8; font-size:1.1rem; letter-spacing:1px; margin-bottom: 30px;'>La mémoire académique de l'excellence — Produit par Caleb Bertrand</p>", unsafe_allow_html=True)
 
-# Ligne des compteurs d'activité en temps réel
-col_stat1, col_stat2, col_stat3 = st.columns(3)
-with col_stat1:
-    st.markdown(f"""
-        <div style='text-align: center; background: rgba(16, 185, 129, 0.08); padding: 20px; border-radius: 18px; border: 1px solid rgba(16, 185, 129, 0.3);'>
-            <h2 style='color: #10B981; margin: 0; font-size: 2.5rem;'>{len(st.session_state.documents)}</h2>
-            <p style='margin: 0; font-size: 0.9rem; text-transform: uppercase; opacity: 0.7;'>Épreuves archivées</p>
-        </div>
-    """, unsafe_allow_html=True)
-with col_stat2:
-    st.markdown(f"""
-        <div style='text-align: center; background: rgba(16, 185, 129, 0.08); padding: 20px; border-radius: 18px; border: 1px solid rgba(16, 185, 129, 0.3);'>
-            <h2 style='color: #10B981; margin: 0; font-size: 2.5rem;'>{len(st.session_state.documents['Matière'].unique())}</h2>
-            <p style='margin: 0; font-size: 0.9rem; text-transform: uppercase; opacity: 0.7;'>Unités d'Enseignement</p>
-        </div>
-    """, unsafe_allow_html=True)
-with col_stat3:
-    st.markdown(f"""
-        <div style='text-align: center; background: rgba(16, 185, 129, 0.08); padding: 20px; border-radius: 18px; border: 1px solid rgba(16, 185, 129, 0.3);'>
-            <h2 style='color: #10B981; margin: 0; font-size: 2.5rem;'>{st.session_state.total_downloads}</h2>
-            <p style='margin: 0; font-size: 0.9rem; text-transform: uppercase; opacity: 0.7;'>Téléchargements sécurisés</p>
-        </div>
-    """, unsafe_allow_html=True)
+# Ligne de statistiques dynamiques en temps réel
+stat_col1, stat_col2, stat_col3 = st.columns(3)
+with stat_col1:
+    st.markdown(f"<div style='text-align:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid rgba(16, 185, 129, 0.2);'><h3 style='color:#10B981; margin:0;'>{len(st.session_state.db)}</h3><p style='margin:0; font-size:0.8rem; opacity:0.7;'>DOCUMENTS EN LIGNE</p></div>", unsafe_allow_html=True)
+with stat_col2:
+    st.markdown(f"<div style='text-align:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid rgba(16, 185, 129, 0.2);'><h3 style='color:#10B981; margin:0;'>16</h3><p style='margin:0; font-size:0.8rem; opacity:0.7;'>FILIÈRES METIERS</p></div>", unsafe_allow_html=True)
+with stat_col3:
+    st.markdown(f"<div style='text-align:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid rgba(16, 185, 129, 0.2);'><h3 style='color:#10B981; margin:0;'>{st.session_state.global_downloads}</h3><p style='margin:0; font-size:0.8rem; opacity:0.7;'>TÉLÉCHARGEMENTS</p></div>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Configuration de l'organisation par Onglets
-tab_archives, tab_depot, tab_favoris, tab_admin, tab_remerciements = st.tabs([
-    "💎 ARCHIVES PREMIUM", "🚀 DÉPÔT ÉLITE", "⭐ MES FAVORIS", "🔑 ESPACE ADMINISTRATEUR", "🤝 RECONNAISSANCES"
+# Définition des onglets applicatifs
+tab_arch, tab_upload, tab_fav, tab_owner, tab_credits = st.tabs([
+    "📂 ARCHIVES PREMIUM", "🚀 DÉPÔT ÉLITE", "⭐ MES FAVORIS", "👑 PANNEAU DE CONTRÔLE", "🤝 RECONNAISSANCE"
 ])
 
-# ==============================================================================
-# 5. ONGLET 1 : ARCHIVES PREMIUM (RECHERCHE PAR COMPARAISON INTELLIGENTE)
-# ==============================================================================
-with tab_archives:
-    st.markdown("### 🔍 Moteur de recherche à tolérance de fautes")
-    search_query = st.text_input("Entrez le mot-clé ou le nom d'une matière (Ex: Termodynamique, Idrologie, Bois...)")
+# ------------------------------------------------------------------------------
+# ONGLET 1 : ARCHIVES & SYSTÈME DE RECHERCHE IA AVEC FAUTES
+# ------------------------------------------------------------------------------
+with tab_arch:
+    st.markdown("🔍 **Moteur de recherche intelligent** *(Tapez le nom de l'UE même avec des fautes d'orthographe)*")
+    search_query = st.text_input("Rechercher une matière...", placeholder="Ex: Termodinamik, Idrologie, Compte...")
     
-    # Filtrage initial des documents basé sur la sidebar académique
-    df_filtered = st.session_state.documents[
-        (st.session_state.documents['Cycle'] == cycle_choisi) &
-        (st.session_state.documents['Niveau'].isin(niveaux_choisis))
-    ]
-    
-    if filtre_annee != "Toutes":
-        df_filtered = df_filtered[df_filtered['Année'] == filtre_annee]
-    if filtre_type != "Tous":
-        df_filtered = df_filtered[df_filtered['Type'] == filtre_type]
-    if filtre_filiere != "Toutes":
-        df_filtered = df_filtered[df_filtered['Filière'] == filtre_filiere]
-        
-    # Logique IA de tolérance aux fautes d'orthographe (Fuzzy text check)
     if search_query:
         matches = []
-        for index, row in df_filtered.iterrows():
-            # Analyse du ratio de proximité textuelle entre la recherche et le nom réel du cours
-            ratio = difflib.SequenceMatcher(None, search_query.lower(), row['Matière'].lower()).ratio()
-            # Si le mot est contenu directement ou si la proximité phonétique/textuelle dépasse 40%
-            if search_query.lower() in row['Matière'].lower() or ratio > 0.4:
+        for idx, row in df_filtered.iterrows():
+            # Mesure de similarité textuelle de 0.0 à 1.0 (Tolérance de fautes)
+            similarity = difflib.SequenceMatcher(None, search_query.lower(), row['Matière'].lower()).ratio()
+            if search_query.lower() in row['Matière'].lower() or similarity > 0.4:
                 matches.append(row)
         df_filtered = pd.DataFrame(matches) if matches else pd.DataFrame(columns=df_filtered.columns)
 
-    # Affichage des épreuves sous forme de cartes Premium Glassmorphism
     if df_filtered.empty:
-        st.info("Aucun document validé ne correspond à vos filtres actuels pour le moment.")
+        st.info("Aucune archive disponible pour ces critères de filtrage.")
     else:
         for idx, row in df_filtered.iterrows():
+            # Rendu visuel dynamique en fonction de la gratuité/premium du document
+            badge_status = "<span class='badge-premium'>💎 CORRIGÉ PREMIUM</span>" if row['Premium'] else "<span class='badge-free'>🆓 SUJET GRATUIT</span>"
+            
             st.markdown(f"""
                 <div class="glass-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
-                            <span class="badge">{row['Type']}</span>
-                            <span style="margin-left: 10px; font-weight: 600; opacity: 0.8;">📅 Session {row['Année']}</span>
+                            <span class="badge-type">{row['Type']}</span>
+                            <span style="font-size:0.85rem; margin-left:10px; opacity:0.8;">📍 <b>{row['Niveau']}</b> | Session {row['Année']}</span>
                         </div>
-                        <div style="color: #FBBF24; font-weight: bold;">{"★" * row['Note']}{"☆" * (5 - row['Note'])}</div>
+                        {badge_status}
                     </div>
-                    <h3 style="margin: 5px 0; font-size: 1.6rem; color: #10B981;">{row['Matière']}</h3>
-                    <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 15px;">
-                        📍 <b>{row['Niveau']}</b> | Filière : {row['Filière']} | Titulaire : {row['Enseignant']} <br>
-                        📦 Taille : {row['Taille']} | Ajouté le : {row['Date']} | ⬇️ Vu {row['Téléchargements']} fois
+                    <h3 style="color:#10B981; margin:6px 0; font-size:1.4rem;">{row['Matière']}</h3>
+                    <p style="font-size:0.85rem; opacity:0.7; margin-bottom:12px;">
+                        🌿 Filière : <b>{row['Filière']}</b> | Titulaire : {row['Enseignant']} <br>
+                        📊 Vu/Téléchargé : {row['Téléchargements']} fois | Publié le : {row['Date_Ajout']} | Évaluation : {"★" * row['Note']}{"☆" * (5 - row['Note'])}
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Grille d'actions pour l'étudiant sous chaque épreuve
-            btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
-            with btn_col1:
-                if st.button(f"📥 Télécharger", key=f"download_{row['id']}"):
-                    st.session_state.documents.loc[st.session_state.documents['id'] == row['id'], 'Téléchargements'] += 1
-                    st.session_state.total_downloads += 1
-                    st.success(f"Téléchargement du fichier de '{row['Matière']}' démarré (Simulation PWA).")
+            # Grille de contrôle de la carte
+            col_b1, col_b2, col_b3, col_b4 = st.columns(4)
+            with col_b1:
+                if row['Premium'] and not st.session_state.is_premium_user:
+                    st.button("🔒 Corrigé Verrouillé (300F)", key=f"lock_{row['id']}", disabled=True)
+                else:
+                    if st.button(f"📥 Télécharger PDF", key=f"dl_{row['id']}"):
+                        st.session_state.db.loc[st.session_state.db['id'] == row['id'], 'Téléchargements'] += 1
+                        st.session_state.global_downloads += 1
+                        st.success(f"Téléchargement lancé : {row['Fichier']}")
+                        st.rerun()
+            with col_b2:
+                fav_text = "❤️ Retirer" if row['Favori'] else "⭐ Favoris"
+                if st.button(fav_text, key=f"fav_{row['id']}"):
+                    st.session_state.db.loc[st.session_state.db['id'] == row['id'], 'Favori'] = not row['Favori']
                     st.rerun()
-            with btn_col2:
-                fav_label = "❤️ Retirer des favoris" if row['Favori'] else "⭐ Ajouter aux favoris"
-                if st.button(fav_label, key=f"fav_{row['id']}"):
-                    st.session_state.documents.loc[st.session_state.documents['id'] == row['id'], 'Favori'] = not row['Favori']
+            with col_b3:
+                new_rating = st.selectbox("Noter", [1, 2, 3, 4, 5], index=int(row['Note'])-1, key=f"rate_{row['id']}")
+                if new_rating != row['Note']:
+                    st.session_state.db.loc[st.session_state.db['id'] == row['id'], 'Note'] = new_rating
                     st.rerun()
-            with btn_col3:
-                # Évaluation par notation étoile interactive
-                nouvelle_note = st.slider("Noter l'épreuve", 1, 5, int(row['Note']), key=f"rate_{row['id']}")
-                if nouvelle_note != row['Note']:
-                    st.session_state.documents.loc[st.session_state.documents['id'] == row['id'], 'Note'] = nouvelle_note
-                    st.rerun()
-            with btn_col4:
-                with st.expander("🔗 QR Code & Partage"):
-                    st.write("Scannez pour partager sur WhatsApp :")
-                    st.code(f"https://source-isabee.cm/archive?id={row['id']}")
+            with col_b4:
+                with st.expander("🔗 Partager"):
+                    st.caption("Lien unique WhatsApp / PWA :")
+                    st.code(f"https://source-isabee.net/share?id={row['id']}")
             
-            # Module de commentaires et d'avis sous l'épreuve
-            with st.expander(f"💬 Commentaires et retours d'expérience ({len(st.session_state.comments.get(row['id'], []))})"):
-                for comment in st.session_state.comments.get(row['id'], []):
-                    st.markdown(f"- *{comment}*")
-                nouveau_comm = st.text_input("Ajouter une remarque ou signaler une erreur :", key=f"add_comm_{row['id']}")
-                if st.button("Publier le commentaire", key=f"btn_comm_{row['id']}"):
-                    if nuevo_comm:
-                        if row['id'] not in st.session_state.comments:
-                            st.session_state.comments[row['id']] = []
-                        st.session_state.comments[row['id']].append(nouveau_comm)
-                        st.success("Commentaire ajouté !")
+            # Module des commentaires sous chaque épreuve
+            with st.expander(f"💬 Espace d'échange et retours d'expérience ({len(st.session_state.comments_db.get(row['id'], []))})"):
+                for comment in st.session_state.comments_db.get(row['id'], []):
+                    st.markdown(f"<p style='font-size:0.85rem; font-style:italic; margin: 2px 0;'>- {comment}</p>", unsafe_allow_html=True)
+                user_comm = st.text_input("Laisser un avis ou signaler une erreur de sujet :", key=f"add_comm_{row['id']}")
+                if st.button("Envoyer", key=f"btn_comm_{row['id']}"):
+                    if user_comm:
+                        if row['id'] not in st.session_state.comments_db:
+                            st.session_state.comments_db[row['id']] = []
+                        st.session_state.comments_db[row['id']].append(user_comm)
                         st.rerun()
 
-# ==============================================================================
-# 6. ONGLET 2 : DÉPÔT ÉLITE (ESPACE SÉCURISÉ DES DÉLÉGUÉS ACADÉMIQUES)
-# ==============================================================================
-with tab_depot:
-    st.markdown("### 🚀 Téléversement de nouveaux documents de révision")
+# ------------------------------------------------------------------------------
+# ONGLET 2 : SYSTÈME DE TÉLÉVERSEMENT INDÉPENDANT SÉCURISÉ (DÉPÔT ÉLITE)
+# ------------------------------------------------------------------------------
+with tab_upload:
+    st.markdown("### 🚀 Dépose une nouvelle épreuve ou un corrigé sur la plateforme")
+    st.caption("En tant que propriétaire ou délégué, tu peux utiliser ce formulaire pour étendre la base de données de ton application.")
     
-    if not st.session_state.authenticated or st.session_state.user_role == "Étudiant":
-        st.warning("⚠️ L'accès à la section 'Dépôt Élite' est strictement restreint aux délégués de classes et à l'administration de l'ISABEE pour assurer la conformité des sujets stockés.")
-    else:
-        st.info(f"Session de téléversement sécurisée au nom du délégué `{st.session_state.user_matricule}`")
-        with st.form("form_depot_elite"):
-            u_matiere = st.text_input("Nom de la matière ou de l'Unité d'Enseignement (UE)*")
-            col_d1, col_d2 = st.columns(2)
-            u_cycle = col_d1.selectbox("Cycle d'études", ["Licence en Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
-            
-            # Détermination dynamique des options de niveau dans le formulaire d'upload
-            if u_cycle == "Licence en Sciences de l'Ingénieur":
-                niv_opts = ["Licence 1", "Licence 2", "Licence 3"]
-            elif u_cycle == "Cycle Ingénieur":
-                niv_opts = ["Ingénieur 1", "Ingénieur 2", "Ingénieur 3", "Ingénieur 4", "Ingénieur 5"]
-            elif u_cycle == "Master I":
-                niv_opts = ["Master 1"]
+    with st.form("form_upload_isabee"):
+        u_matiere = st.text_input("Intitulé exact de la matière / UE :")
+        col_up1, col_up2 = st.columns(2)
+        u_cycle = col_up1.selectbox("Cycle correspondant", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+        u_filiere = col_up2.selectbox("Filière concernée", FILIERES)
+        
+        col_up3, col_up4, col_up5 = st.columns(3)
+        u_niveau = col_up3.selectbox("Niveau d'études requis", ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5", "M1", "M2"])
+        u_type = col_up4.selectbox("Nature de l'évaluation", ["CC", "Examen", "Rattrapage", "TP"])
+        u_annee = col_up5.selectbox("Année de passation", ["2025-2026", "2024-2025", "2023-2024", "2022-2023"])
+        
+        u_enseignant = st.text_input("Enseignant responsable du sujet :")
+        u_premium = st.checkbox("Définir ce document comme PREMIUM (Accès restreint payant à 300 FCFA)")
+        
+        uploaded_file = st.file_uploader("Téléverser le document (PDF, JPG, PNG)", type=["pdf", "jpg", "png", "jpeg"])
+        
+        submit_upload = st.form_submit_button("SÉCURISER ET ARCHIVER LE DOCUMENT")
+        
+        if submit_upload:
+            if u_matiere and uploaded_file:
+                new_doc_id = int(st.session_state.db['id'].max() + 1)
+                new_row = {
+                    "id": new_doc_id, "Cycle": u_cycle, "Filière": u_filiere, "Niveau": u_niveau,
+                    "Matière": u_matiere, "Enseignant": u_enseignant if u_enseignant else "Non spécifié",
+                    "Type": u_type, "Année": u_annee, "Premium": u_premium, "Fichier": uploaded_file.name,
+                    "Téléchargements": 0, "Date_Ajout": datetime.today().strftime('%d/%m/%Y'), "Note": 5, "Favori": False
+                }
+                st.session_state.db = pd.concat([st.session_state.db, pd.DataFrame([new_row])], ignore_index=True)
+                st.success(f"Succès : '{u_matiere}' a bien été crypté et intégré au catalogue Freemium !")
             else:
-                niv_opts = ["Master 2"]
-                
-            u_niveau = col_d2.selectbox("Niveau exact du cours", niv_opts)
-            
-            col_d3, col_d4, col_d5 = st.columns(3)
-            u_type = col_d3.selectbox("Type d'évaluation", ["Examen Semestriel", "Contrôle Continu", "Travaux Pratiques", "Rattrapage"])
-            u_annee = col_d4.selectbox("Année académique", ["2026", "2025", "2024", "2023"])
-            u_filiere = col_d5.selectbox("Filière cible", ["Génie Énergétique", "Génie du Bois", "Génie de l'Eau", "Agriculture", "Environnement"])
-            
-            u_enseignant = st.text_input("Nom de l'Enseignant titulaire de la chaire")
-            u_desc = st.text_area("Description ou remarques importantes concernant le sujet")
-            
-            # Upload par glisser-déposer conforme aux formats autorisés
-            u_file = st.file_uploader("Sélectionnez l'épreuve numérisée (PDF, JPG, PNG, JPEG)", type=['pdf', 'jpg', 'png', 'jpeg'])
-            
-            submit_upload = st.form_submit_button("SÉCURISER LE DOCUMENT DANS LA SOURCE")
-            
-            if submit_upload:
-                if u_matiere and u_file:
-                    # Simulation d'analyse de métadonnées et de détection de doublons
-                    new_id = int(st.session_state.documents['id'].max() + 1)
-                    taille_simulee = f"{np.random.round(u_file.size / (1024*1024), 2)} Mo"
-                    
-                    new_entry = {
-                        "id": new_id, "Matière": u_matiere, "Cycle": u_cycle, "Niveau": u_niveau,
-                        "Année": u_annee, "Type": u_type, "Filière": u_filiere, "Enseignant": u_enseignant if u_enseignant else "Inconnu",
-                        "Taille": taille_simulee, "Date": datetime.today().strftime('%d/%m/%m%Y'), "Téléchargements": 0, "Note": 5, "Favori": False
-                    }
-                    
-                    st.session_state.documents = pd.concat([st.session_state.documents, pd.DataFrame([new_entry])], ignore_index=True)
-                    st.success(f"Félicitations ! L'épreuve de '{u_matiere}' a été chiffrée et sauvegardée avec succès.")
-                    st.rerun()
-                else:
-                    st.error("Erreur critique : Veuillez renseigner le titre du cours et associer le document PDF/Image.")
+                st.error("Remplis le nom de la matière et glisse un fichier valide.")
 
-# ==============================================================================
-# 7. ONGLET 3 : COMPILATION ET ESPACE FAVORIS ÉTUDIANT
-# ==============================================================================
-with tab_favoris:
-    st.markdown("### ⭐ Votre collection de révision sur-mesure")
-    df_favs = st.session_state.documents[st.session_state.documents['Favori'] == True]
+# ------------------------------------------------------------------------------
+# ONGLET 3 : DASHBOARD PERSONNEL DES FAVORIS ÉTUDIANT
+# ------------------------------------------------------------------------------
+with tab_fav:
+    st.markdown("### ⭐ Tes documents de révision mis de côté")
+    df_favs = st.session_state.db[st.session_state.db['Favori'] == True]
     
     if df_favs.empty:
-        st.info("Vous n'avez pas encore d'épreuve enregistrée dans vos favoris.")
+        st.info("Aucun document n'est sauvegardé dans tes favoris pour le moment.")
     else:
         for idx, row in df_favs.iterrows():
             st.markdown(f"""
-                <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid #10B981; border-radius: 15px; padding: 20px; margin-bottom: 15px;">
-                    <h4 style="margin: 0; color: #FFFFFF;">{row['Matière']} — <span style="color: #34D399;">{row['Niveau']}</span></h4>
-                    <p style="margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.8;">Cycle : {row['Cycle']} | Type : {row['Type']} | Session : {row['Année']}</p>
+                <div style="background: rgba(16, 185, 129, 0.05); border-left: 4px solid #10B981; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                    <h4 style="margin:0; color:white;">{row['Matière']} ({row['Niveau']})</h4>
+                    <span style="font-size:0.8rem; opacity:0.7;">Filière : {row['Filière']} | Type : {row['Type']}</span>
                 </div>
             """, unsafe_allow_html=True)
-            if st.button("Retirer", key=f"del_fav_{row['id']}"):
-                st.session_state.documents.loc[st.session_state.documents['id'] == row['id'], 'Favori'] = False
+
+# ------------------------------------------------------------------------------
+# ONGLET 4 : LE PANNEAU DE CONTRÔLE DE L'ENTREPRENEUR (CALEB BERTRAND)
+# ------------------------------------------------------------------------------
+with tab_owner:
+    st.markdown("### 🛠️ Espace Maître à Bord — Gestion du Système")
+    st.caption("Cette section t'est réservée pour suivre l'analyse de ton application et faire la modération.")
+    
+    col_own1, col_own2 = st.columns(2)
+    with col_own1:
+        st.markdown("#### 📈 Classement des documents les plus rentables / recherchés")
+        df_ranking = st.session_state.db.sort_values(by="Téléchargements", ascending=False)[['Matière', 'Niveau', 'Téléchargements', 'Premium']]
+        st.dataframe(df_ranking, use_container_width=True)
+        
+    with col_own2:
+        st.markdown("#### 🗑️ Actions rapides de suppression d'archives")
+        for idx, row in st.session_state.db.iterrows():
+            col_rm_name, col_rm_btn = st.columns([3, 1])
+            col_rm_name.write(f"• {row['Matière']} ({row['Niveau']})")
+            if col_rm_btn.button("Retirer", key=f"del_owner_{row['id']}"):
+                st.session_state.db = st.session_state.db[st.session_state.db['id'] != row['id']]
+                st.toast("Épreuve supprimée !")
                 st.rerun()
 
-# ==============================================================================
-# 8. ONGLET 4 : ANALYTICS ET ESPACE DE MODÉRATION ADMINISTRATEUR
-# ==============================================================================
-with tab_admin:
-    st.markdown("### 📊 Tableau de bord analytique de l'administration")
-    
-    if not st.session_state.authenticated or st.session_state.user_role != "Administrateur":
-        st.warning("🔒 Section sécurisée. Veuillez vous connecter avec un profil 'Administrateur' dans le panneau de gauche pour gérer les archives de l'Université de Bertoua.")
-    else:
-        st.success(f"Accès d'administration globale accordé pour le matricule {st.session_state.user_matricule}")
-        
-        col_adm1, col_adm2 = st.columns(2)
-        with col_adm1:
-            st.markdown("#### 📈 Classement des matières les plus consultées")
-            df_most_viewed = st.session_state.documents.sort_values(by="Téléchargements", ascending=False)[['Matière', 'Niveau', 'Téléchargements']]
-            st.dataframe(df_most_viewed, use_container_width=True)
-            
-        with col_adm2:
-            st.markdown("#### 🛠️ Liste de modération et d'élagage des fichiers")
-            for idx, row in st.session_state.documents.iterrows():
-                col_row_name, col_row_btn = st.columns([3, 1])
-                col_row_name.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
-                if col_row_btn.button("Supprimer", key=f"del_doc_{row['id']}"):
-                    st.session_state.documents = st.session_state.documents[st.session_state.documents['id'] != row['id']]
-                    st.success("Fichier retiré.")
-                    st.rerun()
-
-# ==============================================================================
-# 9. ONGLET 5 : REMERCIEMENTS & ENGAGEMENT INSTITUTIONNEL
-# ==============================================================================
-with tab_remerciements:
-    st.markdown("### 🤝 Reconnaissances et engagements institutionnels")
+# ------------------------------------------------------------------------------
+# ONGLET 5 : RECONNAISSANCE & POLITIQUE DE CONFIDENTIALITÉ
+# ------------------------------------------------------------------------------
+with tab_credits:
+    st.markdown("### 🤝 Engagement Qualité de l'Application")
     st.markdown("""
-    L'évolution de la plateforme **SOURCE ISABEE** est le fruit d'une synergie commune dédiée à l'avancement technologique de notre environnement éducatif :
+    **SOURCE ISABEE** est une plateforme indépendante conçue pour soutenir l'effort d'apprentissage et de réussite des étudiants de l'ISABEE (Université de Bertoua).
     
-    * **À la Direction de l'ISABEE et à l'Université de Bertoua :** Pour l'impulsion vers la transition numérique de nos campus.
-    * **Au Corps Enseignant :** Pour la qualité des évaluations qui préparent les futurs ingénieurs aux défis industriels et écologiques du Cameroun.
-    * **Aux Délégués Académiques :** Véritables gardiens du temple, qui œuvrent quotidiennement pour collecter et numériser proprement les supports de révision.
+    * **Droits et Propriété intellectuelle :** Les épreuves appartiennent à leurs auteurs respectifs (le corps enseignant de l'ISABEE). La plateforme n'assure que leur archivage, indexation et facilitation d'accès.
+    * **Protection des données (RGPD/PWA) :** Aucun mot de passe complexe n'est stocké en ligne pour assurer la fluidité de consultation sur mobile et tablette.
     """)
-    
     st.markdown("---")
-    st.markdown("### 📜 Politique de confidentialité et d'utilisation responsable")
-    with st.expander("Consulter les termes de protection des données académiques"):
-        st.write("""
-        1. **Protection des documents :** Les épreuves restent la propriété intellectuelle exclusive des enseignants de l'Université de Bertoua. Toute exploitation commerciale est strictement interdite.
-        2. **Sécurisation de la vie privée :** Les matricules d'accès servent uniquement à réguler le trafic et à éviter les attaques par déni de service sur le serveur de stockage de Bélabo.
-        3. **Sauvegarde automatique :** Les bases de données sont dupliquées chaque nuit pour éviter toute perte de données en cas d'interruption électrique.
-        """)
+    st.markdown("🔒 **Sauvegarde Automatique :** Base de données active synchronisée sur mémoire locale `SessionState` de l'application.")
 
 # ==============================================================================
-# 10. PIED DE PAGE OFFICIEL : CERTIFICATION DE L'INGÉNIEUR CONCEPTEUR
+# 6. PIED DE PAGE OFFICIEL UNIQUE ET SIGNATURE ENTREPRENEURIALE
 # ==============================================================================
-st.markdown("<br><hr>", unsafe_allow_html=True)
+st.markdown("<br><hr style='border-color: rgba(16, 185, 129, 0.2);'>", unsafe_allow_html=True)
 col_foot1, col_foot2 = st.columns(2)
 with col_foot1:
     st.markdown("""
-        ⚙️ **Développé par :** **CHEMTA Caleb Bertrand** *Étudiant Ingénieur en Génie Énergétique / Informaticien / Entrepreneur* **ISABEE — Université de Bertoua**
+        ⚡ **Propriétaire & Développeur :** **CHEMTA Caleb Bertrand** *Étudiant Ingénieur en Génie Énergétique / Informaticien / Entrepreneur* **ISABEE — Université de Bertoua**
     """, unsafe_allow_html=True)
 
 with col_foot2:
-    st.markdown(f"""
-        📞 **Contact Technologique :** • Téléphone : `696 07 56 60`  
-        • Email : `bertrandchemtacaleb@gmail.com`  
-        • © 2026 **SOURCE ISABEE** | Tous droits réservés.
-    """)
+    st.markdown("""
+        📞 **Contact Commercial & Support Clés :** • Téléphone : `696 07 56 60` | Email : `bertrandchemtacaleb@gmail.com`  
+        • © 2026 **SOURCE ISABEE** — Tous droits réservés. Mode Saas Freemium.
+    """, unsafe_allow_html=True)
