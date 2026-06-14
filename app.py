@@ -4,7 +4,7 @@ import difflib
 from datetime import datetime
 
 # ==============================================================================
-# 1. ARCHITECTURE VISUELLE HAUTE QUALITÉ & GLOW NÉON (CSS COMPLET)
+# 1. ARCHITECTURE VISUELLE HAUTE QUALITÉ & GLOW NÉON (CSS PARFAIT POUR MOBILE)
 # ==============================================================================
 st.set_page_config(
     page_title="SOURCE ISABEE — L'Élite Académique",
@@ -17,11 +17,17 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* Configuration structurelle globale */
-    .stApp {
-        background: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%);
-        color: #FFFFFF;
+    /* FORCE LE THÈME SOMBRE SUR TOUS LES APPAREILS (MOBILE & DESKTOP) */
+    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
+        background: #010D08 !important;
+        background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
+        color: #FFFFFF !important;
         font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    /* Ajustement des textes de la sidebar pour éviter le blanc sur blanc */
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+        color: #FFFFFF !important;
     }
     
     /* --- DESIGN DES EN-TÊTES TRÈS LUMINEUX --- */
@@ -34,6 +40,10 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: -2px;
         text-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
+    }
+    
+    @media (max-width: 768px) {
+        .glow-title { font-size: 2.5rem !important; }
     }
     
     .glow-subtitle {
@@ -104,12 +114,12 @@ st.markdown("""
     
     .big-logo-box {
         flex: 1;
-        background: rgba(255, 255, 255, 0.02);
-        border: 2px dashed #10B981;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 2px dashed #10B981 !important;
         border-radius: 16px;
         padding: 25px 10px;
         text-align: center;
-        color: #34D399;
+        color: #34D399 !important;
         font-weight: 800;
         font-size: 0.9rem;
         letter-spacing: 0.5px;
@@ -122,7 +132,7 @@ st.markdown("""
         margin-top: 40px;
         font-size: 0.85rem;
         line-height: 1.5;
-        color: #A7F3D0;
+        color: #A7F3D0 !important;
     }
 
     /* --- CARTES ET COMPOSANTS INTERNES --- */
@@ -169,7 +179,6 @@ if 'db' not in st.session_state:
     ])
     st.session_state.is_premium_user = False
     
-    # Tables interactives (Touches spéciales)
     st.session_state.interactions = {
         "commentaires": ["Excellente lisibilité sur les sujets de Génie Énergétique.", "Sujet de Thermo Ing4 disponible !"],
         "suggestions": ["Ajouter les TP de chimie des solutions pour les L1."],
@@ -178,10 +187,9 @@ if 'db' not in st.session_state:
     }
 
 # ==============================================================================
-# 3. INTERFACE DE LA BARRE LATÉRALE (LOGOS AGRANDIS, MATRICULE, COORDONNÉES ACCROCHÉES)
+# 3. INTERFACE DE LA BARRE LATÉRALE IMMUNE AUX SELECTION DE THÈMES SMARTPHONE
 # ==============================================================================
 with st.sidebar:
-    # Zone des Logos Agrandis
     st.markdown("""
         <div class="big-logo-container">
             <div class="big-logo-box">🏛️<br>ISABEE LOGO</div>
@@ -191,12 +199,10 @@ with st.sidebar:
     
     st.markdown("### 🔑 ACCÈS COMPTE")
     
-    # Zone d'identification par Matricule requis
     user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B", placeholder="Ex: 22I0123B")
     if not user_matricule.endswith('B') or len(user_matricule) < 8:
         st.warning("Format suggéré : 22IxxxxB")
 
-    # Module Business Freemium (Abonnement à 300F)
     if not st.session_state.is_premium_user:
         st.markdown("""
             <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 18px; border-radius: 12px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
@@ -206,7 +212,7 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
         
-        activation_key = st.text_input("Saisir la clé Premium (Achat Caleb) :", type="password")
+        activation_key = st.text_input("Saisir la clé Premium :", type="password")
         if st.button("Activer la clé Premium"):
             if activation_key == "isabee300":
                 st.session_state.is_premium_user = True
@@ -224,7 +230,6 @@ with st.sidebar:
     f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
     f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
 
-    # Coordonnées de l'étudiant entrepreneur épinglées à la fin de la barre latérale
     st.markdown(f"""
         <div class="sidebar-footer-info">
             <b>👨‍💻 DÉVELOPPEUR EN CHEF :</b><br>
@@ -244,16 +249,15 @@ with st.sidebar:
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens et contrôles continus... Développé par Bertrand Caleb.</p>", unsafe_allow_html=True)
 
-# Mot de bienvenue très lumineux
 st.markdown("""
     <div class="welcome-banner">
         <p class="welcome-text">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
-        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
+        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
     </div>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. MENUS SOUS FORME DE BOUTONS TRÈS MODERNES (TABS COMPORTEMENTAUX)
+# 5. MENUS SOUS FORME DE BOUTONS TRÈS MODERNES
 # ==============================================================================
 tab_premium, tab_upload, tab_fav, tab_control, tab_thanks = st.tabs([
     "📂 ARCHIVES PREMIUM", 
@@ -263,18 +267,17 @@ tab_premium, tab_upload, tab_fav, tab_control, tab_thanks = st.tabs([
     "🤝 RECONNAISSANCE"
 ])
 
-# FILTRAGE DE BASE
 df_view = st.session_state.db.copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
 if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
 if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ------------------------------------------------------------------------------
-# ONGLET 1 : ARCHIVES PREMIUM & RECHERCHE IA AVEC TOLÉRANCE
+# ONGLET 1 : ARCHIVES PREMIUM
 # ------------------------------------------------------------------------------
 with tab_premium:
     st.markdown("### 🔍 Rechercher un document")
-    search_bar = st.text_input("Saisir un mot-clé ou nom d'UE (Tolérance aux fautes d'orthographe active) :", placeholder="Ex: Termodinamique...")
+    search_bar = st.text_input("Saisir un mot-clé ou nom d'UE :", placeholder="Ex: Termodinamique...")
     
     if search_bar:
         matches = []
@@ -292,10 +295,10 @@ with tab_premium:
             st.markdown(f"""
                 <div class="glass-card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4>{row['Matière']}</h4>
+                        <h4 style="color:#FFFFFF; margin:0;">{row['Matière']}</h4>
                         {badge}
                     </div>
-                    <p style="font-size:0.85rem; opacity:0.8; margin: 5px 0;">
+                    <p style="font-size:0.85rem; opacity:0.8; margin: 5px 0; color:#E5E7EB;">
                         <b>Filière :</b> {row['Filière']} | <b>Niveau :</b> {row['Niveau']} | <b>Session :</b> {row['Année']} | <b>Enseignant :</b> {row['Enseignant']}<br>
                         📊 Téléchargé {row['Downloads']} fois.
                     </p>
@@ -316,7 +319,7 @@ with tab_premium:
                     st.toast("Ajouté aux favoris !")
 
 # ------------------------------------------------------------------------------
-# ONGLET 2 : DÉPÔT ÉLITE (MUTUALISATION / TÉLÉVERSEMENT)
+# ONGLET 2 : DÉPÔT ÉLITE
 # ------------------------------------------------------------------------------
 with tab_upload:
     st.markdown("### 🚀 Panel de téléversement sécurisé")
@@ -352,11 +355,11 @@ with tab_fav:
             st.write(f"• **{row['Matière']}** ({row['Niveau']}) — {row['Type']}")
 
 # ------------------------------------------------------------------------------
-# ONGLET 4 : PANNEAU DE CONTRÔLE DE L'ENTREPRENEUR (CALEB BERTRAND)
+# ONGLET 4 : PANNEAU DE CONTRÔLE (POUR TOI ET TON CO-ADMIN)
 # ------------------------------------------------------------------------------
 with tab_control:
     st.markdown("### 👑 Espace de Modération & Métriques")
-    st.write(f"**Identifiant connecté :** {user_matricule} (Administrateur)")
+    st.write(f"**Identifiant connecté :** {user_matricule}")
     
     st.dataframe(st.session_state.db[['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
     
@@ -374,7 +377,6 @@ with tab_control:
 with tab_thanks:
     st.markdown("### 🤝 Communauté, Retours d'expérience et Remerciements")
     
-    # Division en 4 quadrants modernes pour les touches spéciales requises
     t_comm, t_sug, t_av, t_rem = st.tabs(["💬 Commentaires", "💡 Suggestions", "⭐ Avis", "🙏 Remerciements"])
     
     with t_comm:
@@ -408,7 +410,7 @@ with tab_thanks:
     with t_rem:
         st.write("#### Remerciements aux contributeurs de la base de données")
         for r in st.session_state.interactions["remerciements"]:
-            st.markdown(f"<div style='padding:10px; border-left: 3px solid #10B981; background:rgba(16,185,129,0.05); margin-bottom:8px;'>🙏 {r}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='padding:10px; border-left: 3px solid #10B981; background:rgba(16,185,129,0.05); margin-bottom:8px; color:#FFFFFF;'>🙏 {r}</div>", unsafe_allow_html=True)
         new_r = st.text_input("Laisser un mot de gratitude :", key="in_r")
         if st.button("Envoyer le mot", key="b_r") and new_r:
             st.session_state.interactions["remerciements"].append(new_r)
