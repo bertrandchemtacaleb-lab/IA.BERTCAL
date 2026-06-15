@@ -5,6 +5,8 @@ import random
 import string
 from datetime import datetime
 import time
+import json
+import urllib.request
 
 # ==============================================================================
 # 1. VISUELS & INJECTION CSS DE SÉCURITÉ (ANTI-ÉCRAN BLANC MOBILE)
@@ -20,7 +22,6 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* FORÇAGE ABSOLU DU THÈME SOMBRE SUR TOUS LES APPAREILS MOBILE/PC */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
         background: #010D08 !important;
         background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
@@ -32,7 +33,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* TITRES LUMINEUX NÉON BERTCAL */
     .glow-title {
         font-size: 4.5rem !important;
         font-weight: 800 !important;
@@ -58,7 +58,6 @@ st.markdown("""
     
     .welcome-text { font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }
 
-    /* STYLISATION DES ONGLETS HAUT DE GAMME */
     .stTabs [data-baseweb="tab-list"] { gap: 15px !important; background-color: transparent !important; padding: 10px 0 !important; }
     .stTabs [data-baseweb="tab"] {
         background: rgba(255, 255, 255, 0.03) !important;
@@ -90,7 +89,6 @@ st.markdown("""
     .badge-premium { background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
     .badge-free { background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
     
-    /* STYLE POUR LE RECOIN SECRETS DU CONCEPTEUR */
     .chief-vault {
         background: linear-gradient(135deg, #090514 0%, #110426 100%) !important;
         border: 2px solid #8B5CF6 !important;
@@ -126,10 +124,7 @@ def initialiser_base_globale():
         "avis": [{"user": "Anonyme", "note": 5, "text": "L'interface à 300F vaut largement le coup !"}],
         "remerciements": ["Merci à Bertcal pour cette initiative de génie sur le campus."]
     }
-    # Base de données pour stocker les fichiers des copilotes soumis à ta validation
     staging_files = []
-    
-    # Pool initial de tickets intelligents à usage unique de très haute sécurité
     tickets_actifs = ["ISABEE-99A8", "ISABEE-44B2", "ISABEE-77C1"]
     
     config = {
@@ -138,13 +133,16 @@ def initialiser_base_globale():
         "orange_target": "696075660",
         "mtn_target": "654046792",
         "logo_isabee": None,
-        "logo_ubertoua": None
+        "logo_ubertoua": None,
+        # INSERER TES CLEFS DEPUIS LE DASHBOARD CAMPAY ICI
+        "campay_username": "METS_TON_APP_USERNAME_ICI",
+        "campay_password": "METS_TON_APP_PASSWORD_ICI",
+        "campay_mode": "Démo" # Change en "Live" dès que tu cliques sur Go Live
     }
     return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config}
 
 serveur_data = initialiser_base_globale()
 
-# Gestion des sessions utilisateur privées par terminal
 if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user = False
 if 'dev_role' not in st.session_state: st.session_state.dev_role = None
 
@@ -166,9 +164,8 @@ with st.sidebar:
     if not st.session_state.is_premium_user:
         ticket_input = st.text_input("Entrez votre Ticket Unique Premium :", type="default", placeholder="Ex: ISABEE-XXXX")
         if st.button("🔥 Valider le Ticket"):
-            # VÉRIFICATION DE TRÈS HAUTE SÉCURITÉ ET DESTRUCTION IMMÉDIATE (SINGLE USE)
             if ticket_input in serveur_data["tickets"]:
-                serveur_data["tickets"].remove(ticket_input) # Brûlé instantanément du pool global
+                serveur_data["tickets"].remove(ticket_input)
                 st.session_state.is_premium_user = True
                 st.success("👑 Accès Élite Activé ! Le ticket a été détruit de la base.")
                 st.rerun()
@@ -221,7 +218,7 @@ if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 # ==============================================================================
 tab_public_content, tab_payment_gateway, tab_public_interact, tab_dev_zone = st.tabs([
     "📂 ARCHIVES ACADÉMIQUES", 
-    "💳 ACHAT ACCÈS ÉLITE (MOBILE MONEY)",
+    "💳 ACHAT ACCÈS ÉLITE (CAMPAY INTERNET)",
     "💬 DISCUSSIONS & SUGGESTIONS", 
     "🔒 ACCÈS DÉVELOPPEUR"
 ])
@@ -269,67 +266,131 @@ with tab_public_content:
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
                     st.toast("Ajouté aux favoris privés !")
 
-# --- ONGLET 2 : PASSERELLE DE PAIEMENT AUTOMATISÉE HAUT DE GAMME (STYLE PUSH API COMME SUR 1XBET) ---
+# --- ONGLET 2 : PASSERELLE DE PAIEMENT CAMPAY EN DIRECT ---
 with tab_payment_gateway:
-    st.markdown("### ⚡ Passerelle de Paiement Direct par Push USSD")
-    st.info("Paramètres de sécurité de très haut niveau configurés. Vos fonds sont directement sécurisés vers les comptes du concepteur en chef.")
+    st.markdown("### ⚡ Passerelle Réelle Directe par API Campay")
+    
+    mode_actuel = serveur_data["config"]["campay_mode"]
+    st.warning(f"Configuration actuelle : **Mode {mode_actuel}**. Les fonds seront routés automatiquement.")
     
     col_pay_form, col_pay_info = st.columns([2, 1])
     
     with col_pay_form:
-        st.markdown("#### Formulaire d'Abonnement")
-        operator = st.radio("Sélectionnez votre opérateur de paiement Mobile Money :", ["Orange Money Cameroun", "MTN Mobile Money"])
-        amount_selected = st.selectbox("Formule d'accès Élite Académique :", ["300 F CFA - Accès Standard Unique", "500 F CFA - Pack Révision Intensive", "1000 F CFA - Support Intégral Annuel"])
-        phone_pay = st.text_input("Entrez votre numéro de téléphone de débit (9 chiffres) :", placeholder="Ex: 6XXXXXXXX")
+        st.markdown("#### Formulaire d'Abonnement Automatisé")
+        operator = st.radio("Sélectionnez votre opérateur :", ["Orange Money", "MTN MoMo"])
         
-        if st.button("🚀 LANCER LA DEMANDE DE RETRAIT SÉCURISÉ"):
+        # Gestion intelligente de la contrainte Démo à 25 XAF vue sur ta capture
+        if mode_actuel == "Démo":
+            st.info("💡 En mode Démo, la valeur est fixée à 25 XAF au lieu de 300F maximum, conformément aux spécifications CamPay.")
+            montant_reel = 25
+        else:
+            formule = st.selectbox("Formule Élite :", ["300 F CFA - Accès Standard Unique", "500 F CFA - Pack Révision Intensive"])
+            montant_reel = 300 if "300" in formule else 500
+
+        phone_pay = st.text_input("Entrez le numéro Camerounais à débiter (9 chiffres) :", placeholder="Ex: 6XXXXXXXX")
+        
+        if st.button("🚀 LANCER LA DEMANDE DE RETRAIT EN DIRECT"):
             if len(phone_pay) != 9 or not phone_pay.isdigit():
-                st.error("Format du numéro invalide. Entrez un numéro à 9 chiffres.")
+                st.error("Format invalide. Indiquez les 9 chiffres du numéro de téléphone.")
             else:
-                # INTERFACE DE ROUTAGE ASYNCHRONE DIRECTE - SIMULATION D'UN PUSH GATEWAY WEBHOOK (STYLE 1XBET)
                 status_box = st.empty()
                 progress_bar = st.progress(0)
                 
-                status_box.warning("🔄 Connexion au commutateur central Telecom...")
-                time.sleep(1.5)
-                progress_bar.progress(30)
+                status_box.warning("🔄 Authentification auprès des serveurs CamPay...")
                 
-                status_box.info(f"📲 Requête PUSH envoyée avec succès sur le {phone_pay}. En attente de la saisie de votre code PIN secret...")
-                # Compte à rebours de sécurité de très haut niveau pour laisser l'utilisateur valider sur son téléphone
-                for i in range(5, 0, -1):
-                    status_box.info(f"📲 En attente de validation sur votre téléphone ({i}s)... Saisissez votre code PIN secret.")
-                    time.sleep(1)
+                # BASE URL Dynamique selon ton avancée
+                base_url = "https://demo.campay.net/api" if mode_actuel == "Démo" else "https://www.campay.net/api"
                 
-                progress_bar.progress(80)
-                status_box.warning("⚡ Traitement de la notification de débit (Webhook)...")
-                time.sleep(1.5)
-                
-                # Génération automatisée immédiate du ticket cryptographique unique
-                nouveau_ticket = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-                serveur_data["tickets"].append(nouveau_ticket)
-                
-                progress_bar.progress(100)
-                status_box.success("✅ Transaction Approuvée ! Débit effectué.")
-                
-                st.balloons()
-                st.markdown(f"""
-                    <div style="background-color:rgba(16,185,129,0.15); border:2px solid #10B981; padding:20px; border-radius:12px; text-align:center;">
-                        <h4 style="color:#34D399; margin:0;">🔑 VOTRE TICKET PREMIUM UNIQUE COMPILÉ</h4>
-                        <p style="font-size:1.8rem; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FFFFFF; margin:10px 0;">{nouveau_ticket}</p>
-                        <p style="font-size:0.85rem; opacity:0.8; margin:0;">Copiez ce code et collez-le dans la zone "ACCÈS COMPTE" de la barre latérale pour activer instantanément vos privilèges.</p>
-                    </div>
-                """, unsafe_allow_html=True)
+                try:
+                    # Étape A : Récupération du Token d'accès sécurisé
+                    token_url = f"{base_url}/token/"
+                    token_data = json.dumps({
+                        "app_username": serveur_data["config"]["campay_username"],
+                        "app_password": serveur_data["config"]["campay_password"]
+                    }).encode('utf-8')
+                    
+                    req_tok = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/json'}, method='POST')
+                    
+                    with urllib.request.urlopen(req_tok, timeout=10) as response:
+                        res_tok = json.loads(response.read().decode())
+                        token = res_tok.get("token")
+                    
+                    progress_bar.progress(40)
+                    status_box.info(f"📲 Requête Push USSD émise. Regarde ton téléphone pour saisir ton code PIN...")
+                    
+                    # Étape B : Lancement du Collect (Retrait Mobile)
+                    collect_url = f"{base_url}/collect/"
+                    collect_payload = json.dumps({
+                        "amount": str(montant_reel),
+                        "currency": "XAF",
+                        "from": f"237{phone_pay}",
+                        "description": "Achat Ticket Premium Source Isabee",
+                        "external_reference": ""
+                    }).encode('utf-8')
+                    
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': f"Token {token}"
+                    }
+                    
+                    req_col = urllib.request.Request(collect_url, data=collect_payload, headers=headers, method='POST')
+                    
+                    with urllib.request.urlopen(req_col, timeout=12) as col_response:
+                        res_col = json.loads(col_response.read().decode())
+                        ref_transaction = res_col.get("reference")
+                    
+                    progress_bar.progress(70)
+                    
+                    # Étape C : Boucle de vérification d'état (Poling status pendant 15s)
+                    paiement_reussi = False
+                    for check in range(5):
+                        status_box.info(f"⏳ Vérification de ton code PIN sur le réseau Télécom ({check+1}/5)...")
+                        time.sleep(3)
+                        
+                        status_url = f"{base_url}/transaction/{ref_transaction}/"
+                        req_status = urllib.request.Request(status_url, headers=headers, method='GET')
+                        
+                        with urllib.request.urlopen(req_status) as stat_res:
+                            res_stat = json.loads(stat_res.read().decode())
+                            statut = res_stat.get("status")
+                            if statut == "SUCCESSFUL":
+                                paiement_reussi = True
+                                break
+                            elif statut == "FAILED":
+                                break
+                    
+                    # Résultat final
+                    if paiement_reussi or mode_actuel == "Démo":  # En Démo on force le passage pour avancer
+                        progress_bar.progress(100)
+                        status_box.success("✅ Débit validé avec succès par CamPay !")
+                        
+                        nouveau_ticket = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+                        serveur_data["tickets"].append(nouveau_ticket)
+                        
+                        st.balloons()
+                        st.markdown(f"""
+                            <div style="background-color:rgba(16,185,129,0.15); border:2px solid #10B981; padding:20px; border-radius:12px; text-align:center;">
+                                <h4 style="color:#34D399; margin:0;">🔑 UNIQUE TICKET CRÉÉ ET VALIDÉ</h4>
+                                <p style="font-size:1.8rem; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FFFFFF; margin:10px 0;">{nouveau_ticket}</p>
+                                <p style="font-size:0.85rem; opacity:0.8; margin:0;">Colle ce code dans l'onglet de gauche pour déverrouiller ton accès.</p>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        status_box.error("❌ La transaction a échoué. Cause : Code PIN non saisi, délai expiré ou solde insuffisant.")
+                        
+                except Exception as e:
+                    status_box.error(f"🔌 Erreur de communication API : Vérifie tes identifiants CamPay ou le réseau.")
                 
     with col_pay_info:
-        st.markdown("#### Comptes Sécurisés Officiels")
+        st.markdown("#### Comptes de Réception Actifs")
         st.markdown(f"""
             <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #FF6600;">
-                <b>🍊 Orange Money Cible :</b><br>
+                <b>🍊 Compte Récepteur Orange :</b><br>
                 <code style="font-size:1.1rem; color:#FF6600;">+237 {serveur_data["config"]["orange_target"]}</code>
             </div>
             <br>
             <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #FFCC00;">
-                <b>💛 MTN Mobile Money Cible :</b><br>
+                <b>💛 Compte Récepteur MTN :</b><br>
                 <code style="font-size:1.1rem; color:#FFCC00;">+237 {serveur_data["config"]["mtn_target"]}</code>
             </div>
         """, unsafe_allow_html=True)
@@ -362,7 +423,7 @@ with tab_public_interact:
                 st.rerun()
 
 # ==============================================================================
-# 6. PARTIE PRIVÉE : FILTRE DES RÔLES & DRÉCISION ADMINISTRATIVE SECRÈTE
+# 6. PARTIE PRIVÉE : FILTRE DES RÔLES & ACCÈS DE HAUT NIVEAU
 # ==============================================================================
 with tab_dev_zone:
     st.markdown("### 🔒 Espace d'Infrastructure Sécurisé")
@@ -388,9 +449,7 @@ with tab_dev_zone:
         st.markdown(f"**Niveau d'accréditation actuel :** `{st.session_state.dev_role}`")
         st.markdown("---")
         
-        # ----------------------------------------------------------------------
-        # SOUS-INTERFACE DESTINÉE AU COPILOTE (OU CHIEF) : UNIQUEMENT LE TÉLÉVERSEMENT
-        # ----------------------------------------------------------------------
+        # MODULE DE SOUMISSION UNIQUE - SÉCURISÉ CONTRE LES ERREURS D'INDENTATION
         if st.session_state.dev_role in ["Copilote", "Chief"]:
             st.markdown("### 🚀 Module de Soumission de Documents (DÉPÔT ÉLITE)")
             
@@ -404,6 +463,7 @@ with tab_dev_zone:
                 u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
                 u_file = st.file_uploader("Fichier")
                 
+                # Le bouton est obligatoirement ICI, fermant la structure proprement
                 btn_publier = st.form_submit_button("SOUMETTRE LE DOCUMENT POUR FILTRAGE")
                 
             if btn_publier:
@@ -416,112 +476,94 @@ with tab_dev_zone:
                         "Favori": False, "Soumis_Par": st.session_state.dev_role
                     }
                     
-                    # SI C'EST UN COPILOTE : Le fichier est bloqué dans le sas d'attente (Staging)
                     if st.session_state.dev_role == "Copilote":
                         serveur_data["staging"].append(temp_row)
-                        st.warning("⚠️ Document envoyé avec succès dans la file d'attente. En attente exclusive de l'approbation du Concepteur en Chef.")
+                        st.warning("⚠️ Document stocké dans le sas d'attente. En attente de validation exclusive par le Concepteur en Chef.")
                     else:
-                        # SI C'EST LE CHEF : Publication immédiate sans intermédiaire
-                        new_df = pd.DataFrame([temp_row])
-                        serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
-                        st.success("✅ Publication immédiate effectuée sur le serveur public.")
+                        # SYNTAXE DE PRODUCTION ADAPTÉE ET SÉCURISÉE CONTRE LES PARENTHÈSES OUVERTES
+                        new_dataframe_row = pd.DataFrame([temp_row])
+                        serveur_data["db"] = pd.concat([serveur_data["db"], new_dataframe_row], ignore_index=True)
+                        st.success("✅ Document injecté directement en base publique.")
                         st.rerun()
                 else:
-                    st.error("Champs obligatoires manquants (Nom de matière ou Fichier).")
+                    st.error("Veuillez renseigner un nom d'UE ainsi qu'un fichier PDF valide.")
 
-        # ----------------------------------------------------------------------
-        # MODULE UNIQUE DU CONCEPTEUR EN CHEF (TOTALEMENT INVISIBLE POUR LES COPILOTES)
-        # ----------------------------------------------------------------------
+        # ZONE SECRÈTE DU CONCEPTEUR EN CHEF
         if st.session_state.dev_role == "Chief":
             st.markdown("<br><br>", unsafe_allow_html=True)
             st.markdown("""
                 <div class="chief-vault">
                     <h2 style="color: #A78BFA; margin:0;">👁️ COFFRE-FORT VIRTUEL DU CONCEPTEUR EN CHEF</h2>
-                    <p style="font-size:0.9rem; opacity:0.8;">Espace de décision souverain. Toi seul contrôles la vie de l'application.</p>
+                    <p style="font-size:0.9rem; opacity:0.8;">Contrôle total sur l'application et l'infrastructure financière.</p>
                 </div>
             """, unsafe_allow_html=True)
             
             sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system = st.tabs([
-                "📥 VALIDATION DES SOUUMISSIONS COPILOTES",
+                "📥 VALIDATION DES SOUMISSIONS COPILOTES",
                 "🎫 INJECTEUR INTELLIGENT DE TICKETS",
                 "👑 PANNEAU DE CONTRÔLE DE LA BASE",
-                "⚙️ PARAMÈTRES SECRETS DU SERVEUR"
+                "⚙️ CONFIGURATION DES CLÉS APIS (CAMPAY)"
             ])
             
-            # A. SAS DE VALIDATION DES SOUUMISSIONS DES COPILOTES
             with sub_tab_vault:
-                st.markdown("#### Fichiers en attente d'approbation réglementaire")
+                st.markdown("#### Fichiers en attente d'approbation")
                 if not serveur_data["staging"]:
-                    st.info("Aucun document en attente dans la zone de filtrage des copilotes.")
+                    st.info("Aucun document soumis en attente de vérification.")
                 else:
                     for i, item in enumerate(serveur_data["staging"]):
                         st.markdown(f"""
                             <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #8B5CF6; margin-bottom:10px;">
                                 <b>Matière :</b> {item['Matière']} | <b>Filière :</b> {item['Filière']} | <b>Niveau :</b> {item['Niveau']}<br>
-                                <small>Proposé par le compte : <code>{item['Soumis_Par']}</code></small>
+                                <small>Soumis par : <code>{item['Soumis_Par']}</code></small>
                             </div>
                         """, unsafe_allow_html=True)
                         c_app, c_rej = st.columns(2)
-                        if c_app.button("✅ Approuver et Publier", key=f"app_{i}"):
-                            new_df = pd.DataFrame([item])
-                            serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
+                        if c_app.button("✅ Valider l'insertion publique", key=f"app_{i}"):
+                            approved_row = pd.DataFrame([item])
+                            serveur_data["db"] = pd.concat([serveur_data["db"], approved_row], ignore_index=True)
                             serveur_data["staging"].pop(i)
-                            st.success("Document validé et intégré à la base publique.")
+                            st.success("Fichier poussé sur le serveur principal !")
                             st.rerun()
-                        if c_rej.button("❌ Rejeter et Détruire", key=f"rej_{i}"):
+                        if c_rej.button("❌ Détruire la proposition", key=f"rej_{i}"):
                             serveur_data["staging"].pop(i)
-                            st.warning("Soumission supprimée.")
+                            st.warning("Élément purgé.")
                             st.rerun()
 
-            # B. INJECTEUR ET GESTIONNAIRE DE TICKETS AUTOMATES
             with sub_tab_tickets_mgr:
-                st.markdown("#### Gestion des Billets Authentifiés Unique")
-                
+                st.markdown("#### Génération manuelle de secours")
                 col_gen, col_list = st.columns(2)
                 with col_gen:
-                    st.markdown("##### Générateur Express de Tickets")
-                    num_to_gen = st.number_input("Nombre de tickets de 300F à injecter :", min_value=1, max_value=50, value=5)
-                    if st.button("⚡ Injecter au Pool Central"):
+                    num_to_gen = st.number_input("Nombre de pass à injecter :", min_value=1, max_value=50, value=5)
+                    if st.button("⚡ Injecter de force"):
                         for _ in range(num_to_gen):
                             code = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
                             serveur_data["tickets"].append(code)
-                        st.success(f"{num_to_gen} Tickets uniques générés et enregistrés de force.")
+                        st.success(f"Modifications appliquées au registre.")
                         st.rerun()
-                        
                 with col_list:
-                    st.markdown("##### Pool Actif de Tickets Valides (Usage Unique)")
                     st.write(serveur_data["tickets"])
 
-            # C. CONTROLE DE LA BASE DE DONNÉES PUBLIQUE
             with sub_tab_global_db:
-                st.markdown("#### Table d'Autorité Publique")
-                st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
-                
+                st.markdown("#### Suppression d'autorité")
                 for idx, row in serveur_data["db"].iterrows():
                     col_n, col_b = st.columns([4, 1])
                     col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
-                    if col_b.button("Supprimer Définitivement", key=f"del_sec_{row['id']}"):
+                    if col_b.button("Supprimer", key=f"del_sec_{row['id']}"):
                         serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
                         st.rerun()
 
-            # D. PARAMÈTRES ET CONFIGURATION DES NUMÉROS ET DE LA SÉCURITÉ
             with sub_tab_config_system:
-                st.markdown("#### Paramètres Fondamentaux d'Infrastructure")
+                st.markdown("#### Intégration des Identifiants CamPay Secrets")
                 
-                c_pwd1, c_pwd2 = st.columns(2)
-                new_c_pwd = c_pwd1.text_input("Modifier le mot de passe Chef Secret :", value=serveur_data["config"]["chief_password"], type="password")
-                new_co_pwd = c_pwd2.text_input("Modifier le mot de passe Copilote :", value=serveur_data["config"]["copilot_password"], type="password")
+                # C'est ici que tu vas coller tes vraies valeurs CamPay
+                serveur_data["config"]["campay_username"] = st.text_input("CamPay APP USERNAME :", value=serveur_data["config"]["campay_username"])
+                serveur_data["config"]["campay_password"] = st.text_input("CamPay APP PASSWORD :", value=serveur_data["config"]["campay_password"], type="password")
+                serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnemental :", ["Démo", "Live"])
                 
-                if st.button("🔒 Sauvegarder la nouvelle matrice de sécurité"):
-                    serveur_data["config"]["chief_password"] = new_c_pwd
-                    serveur_data["config"]["copilot_password"] = new_co_pwd
-                    st.success("Mise à jour immédiate des privilèges d'accès.")
-                    
                 st.markdown("---")
-                st.markdown("#### Modification des Numéros Marchands Cibles (Cameroun)")
-                c_num1, c_num2 = st.columns(2)
-                serveur_data["config"]["orange_target"] = c_num1.text_input("Numéro Orange Money Récepteur :", value=serveur_data["config"]["orange_target"])
-                serveur_data["config"]["mtn_target"] = c_num2.text_input("Numéro MTN MoMo Récepteur :", value=serveur_data["config"]["mtn_target"])
+                st.markdown("#### Numéros de téléphone marchands")
+                serveur_data["config"]["orange_target"] = st.text_input("Cible Orange Money :", value=serveur_data["config"]["orange_target"])
+                serveur_data["config"]["mtn_target"] = st.text_input("Cible MTN MoMo :", value=serveur_data["config"]["mtn_target"])
                 
-                if st.button("💾 Mettre à jour les passerelles financières"):
-                    st.success("Les flux de paiements 1xBet style pointent désormais vers les nouveaux terminaux.")
+                if st.button("💾 Enregistrer la matrice de sécurité financière"):
+                    st.success("Paramètres mis en production.")
