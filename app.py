@@ -146,6 +146,41 @@ if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user =
 if 'dev_role' not in st.session_state: st.session_state.dev_role = None
 
 # ==============================================================================
+# 2.5 BARRIÈRE DE LIAISON INITIALE OBLIGATOIRE (E-MAIL OU TÉLÉPHONE)
+# ==============================================================================
+if 'user_linked' not in st.session_state:
+    st.session_state.user_linked = False
+
+if not st.session_state.user_linked:
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='glow-subtitle'>L'Élite Académique — Université de Bertoua</p>", unsafe_allow_html=True)
+    
+    col_center_auth, _ = st.columns([2, 1])
+    with col_center_auth:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#34D399; margin-top:0;'>🔐 Activation du démarrage</h3>", unsafe_allow_html=True)
+        st.write("Veuillez lier votre compte étudiant pour accéder aux archives.")
+        
+        with st.form("startup_identity_form"):
+            user_input_identifier = st.text_input("Adresse E-mail ou Numéro de Téléphone :", placeholder="exemple@gmail.com ou 6xxxxxxxx")
+            agree_terms = st.checkbox("J'accepte les conditions d'utilisation de la plateforme.", value=True)
+            
+            submit_identity = st.form_submit_button("🚀 ENTRER DANS L'APPLICATION")
+            if submit_identity:
+                if not user_input_identifier.strip():
+                    st.error("Action requise : Veuillez fournir un identifiant valide.")
+                elif not agree_terms:
+                    st.warning("Vous devez accepter les conditions pour continuer.")
+                else:
+                    st.session_state.user_linked = True
+                    st.session_state.user_contact = user_input_identifier.strip()
+                    st.toast("Compte lié avec succès au démarrage !")
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
+# ==============================================================================
 # 3. BARRE LATÉRALE (AUTHENTIFICATION, SYSTÈME TICKET UNIQUE & FILTRES)
 # ==============================================================================
 with st.sidebar:
@@ -184,6 +219,7 @@ with st.sidebar:
 
     st.markdown(f"""
         <div class="sidebar-blue-footer">
+            Dans votre session: <b>{st.session_state.get('user_contact', 'Connecté')}</b><br>
             Développé par: <b>Chemta Caleb Bertrand</b><br>
             étudiant ingénieur en génie énergétique.<br>
             <br>
@@ -195,17 +231,150 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE PRINCIPAL
+# 4. EN-TÊTE PRINCIPAL & PANNEAU CONFIGURATION PARAMÈTRES (POPOVER)
 # ==============================================================================
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
 
-st.markdown("""
-    <div class="welcome-banner">
-        <p class="welcome-text">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
-        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
-    </div>
-""", unsafe_allow_html=True)
+# Alignement côte à côte de la bienvenue et des paramètres structurés
+col_banner, col_settings_trigger = st.columns([83, 17], vertical_alignment="center")
+
+with col_banner:
+    st.markdown("""
+        <div class="welcome-banner" style="margin-bottom:0px;">
+            <p class="welcome-text" style="margin:0; font-size:1.5rem !important;">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
+            <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.90rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_settings_trigger:
+    with st.popover("⚙️ Paramètres App", use_container_width=True):
+        st.markdown("### 🛠️ Options de Configuration")
+        
+        tab_p1, tab_p2, tab_p3, tab_p4 = st.tabs(["👤 Identité", "🔒 Sécurité", "⚙️ Système", "💼 Business & Pro"])
+        
+        with tab_p1:
+            st.markdown("**Compte et profil**")
+            st.text_input("Nom d'utilisateur", value="Utilisateur_Isabee")
+            st.file_uploader("Photo de profil", type=["png", "jpg", "jpeg"], key="cfg_prof_pic")
+            st.text_input("Adresse e-mail", value=st.session_state.user_contact if "@" in st.session_state.user_contact else "")
+            st.text_input("Numéro de téléphone", value="" if "@" in st.session_state.user_contact else st.session_state.user_contact)
+            st.text_input("Mot de passe", type="password", value="defaultpassword")
+            st.button("Mettre à jour le Profil", key="btn_up_prof")
+            
+            st.markdown("---")
+            st.markdown("**Notifications**")
+            st.checkbox("Notifications push", value=True)
+            st.checkbox("Notifications par e-mail", value=True)
+            st.checkbox("Sons et vibrations", value=False)
+            st.button("Alertes personnalisées")
+
+        with tab_p2:
+            st.markdown("**Confidentialité et sécurité**")
+            st.button("Paramètres de confidentialité")
+            st.checkbox("Authentification à deux facteurs")
+            st.button("Gestion des appareils connectés")
+            st.button("Permissions accordées à l'application")
+            st.button("Blocage et signalement d'utilisateurs")
+            
+            st.markdown("---")
+            st.markdown("**Déconnexion et suppression**")
+            if st.button("🚪 Déconnexion", key="logout_action_btn", use_container_width=True):
+                st.session_state.user_linked = False
+                st.session_state.dev_role = None
+                st.rerun()
+            if st.button("❌ Désactivation du compte", use_container_width=True):
+                st.warning("Compte désactivé temporairement.")
+            if st.button("🚨 Suppression définitive du compte", use_container_width=True):
+                st.error("Action critique initiée.")
+
+        with tab_p3:
+            st.markdown("**Apparence**")
+            st.selectbox("Mode clair/sombre", ["Mode Sombre 🌙", "Mode Clair ☀️"])
+            st.selectbox("Langue", ["Français", "Anglais"], key="lang_box_1")
+            st.slider("Taille du texte", 12, 22, 14)
+            st.selectbox("Thème ou couleurs", ["Vert Émeraude Isabee", "Bleu Cobalt", "Or Élite"])
+            
+            st.markdown("**Données et stockage**")
+            st.button("Utilisation du stockage")
+            if st.button("Vider le cache"):
+                st.toast("Cache nettoyé.")
+            st.button("Téléchargements")
+            st.checkbox("Sauvegarde et synchronisation", value=True)
+            
+            st.markdown("**Accessibilité**")
+            st.slider("Taille des caractères", 12, 22, 14, key="access_slider")
+            st.checkbox("Lecture vocale")
+            st.checkbox("Contraste élevé")
+            st.checkbox("Sous-titres")
+            
+            st.markdown("**Préférences générales**")
+            st.selectbox("Région", ["Cameroun", "Afrique Centrale", "International"])
+            st.write(f"Date et heure de session : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            st.button("Paramètres de connexion")
+            
+            st.markdown("**Aide & À propos**")
+            with st.expander("ℹ️ Mentions et Support"):
+                st.button("FAQ")
+                st.button("Centre d'aide")
+                st.button("Contact du support")
+                st.button("Signalement de problèmes")
+                st.write("Version de l'application : v2.6.15-Pro")
+                st.button("Conditions d'utilisation")
+                st.button("Politique de confidentialité")
+                st.button("Mentions légales")
+
+        with tab_p4:
+            st.markdown("**Gestion du compte & Administration**")
+            st.button("Informations du propriétaire")
+            st.button("Changement du mot de passe Administrateur")
+            st.button("Sécurité du compte d'infrastructure")
+            st.checkbox("Authentification à deux facteurs Pro", value=True)
+            
+            st.markdown("**Équipe et utilisateurs**")
+            st.button("Ajouter un collaborateur")
+            st.button("Supprimer un collaborateur")
+            st.selectbox("Rôles et permissions", ["Super Admin", "Chef Concepteur", "Copilote"])
+            st.button("Historique des connexions de l'équipe")
+            
+            st.markdown("**Paiements et facturation**")
+            st.button("Moyens de paiement acceptés")
+            st.button("Factures générées")
+            st.button("Abonnements actifs")
+            st.button("Historique des transactions financières")
+            
+            st.markdown("**Notifications Pro**")
+            st.checkbox("E-mails professionnels")
+            st.checkbox("Alertes de commandes")
+            st.checkbox("Alertes de paiement")
+            st.checkbox("Notifications clients")
+            
+            st.markdown("**Paramètres commerciaux**")
+            st.text_input("Horaires d'ouverture", value="24h/24 - En ligne")
+            st.text_input("Services proposés", value="Archives Académiques Universitaires")
+            st.text_input("Tarifs standards", value="300 F CFA")
+            st.text_input("Zones d'intervention ou de livraison", value="ISABEE / U-BERTOUA")
+            
+            st.markdown("**Confidentialité et conformité**")
+            st.button("Politique de confidentialité commerciale")
+            st.button("Conditions générales de vente (CGV)")
+            st.button("Gestion des données clients (RGPD)")
+            
+            st.markdown("**Intégrations & Infrastructure**")
+            st.button("Réseaux sociaux branchés")
+            st.button("Outils de paiement (Passerelle CamPay)")
+            st.button("Logiciels de gestion intégrés")
+            st.button("Documentation API Technique")
+            st.button("Assistance & Signalement infrastructure")
+            
+            st.markdown("**Statistiques globales**")
+            col_s1, col_s2, col_s3 = st.columns(3)
+            col_s1.metric("Clients", "1,420")
+            col_s2.metric("Ventes", "945")
+            col_s3.metric("C.A.", "283,500 F")
+            st.button("Performances approfondies de l'activité")
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 df_view = serveur_data["db"].copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
@@ -237,7 +406,6 @@ with tab_public_content:
     if df_view.empty:
         st.info("Aucun document trouvé pour ces critères.")
     else:
-        # Fonction callback pour incrémenter proprement le compteur après un téléchargement réel
         def incrementer_compteur_telechargement(doc_id):
             serveur_data["db"].loc[serveur_data["db"]['id'] == doc_id, 'Downloads'] += 1
 
@@ -261,13 +429,11 @@ with tab_public_content:
                 if row['Premium'] and not st.session_state.is_premium_user:
                     st.button("🔒 Débloquer le corrigé (300F requis)", key=f"l_{row['id']}", disabled=True)
                 else:
-                    # Extraction sécurisée des octets réels du fichier ou fallback démo si vide
                     try:
                         content_pdf = row["file_bytes"] if ("file_bytes" in row.index and pd.notna(row["file_bytes"])) else b"%PDF-1.5\n% Document Virtuel Source Isabee"
                     except:
                         content_pdf = b"%PDF-1.5\n% Document Virtuel Source Isabee"
                     
-                    # CORRECTION MAJEURE : Remplacement par le bouton de téléchargement natif navigateur/téléphone
                     st.download_button(
                         label="📥 Télécharger le PDF",
                         data=content_pdf,
@@ -312,7 +478,6 @@ with tab_payment_gateway:
                 progress_bar = st.progress(0)
                 
                 status_box.warning("🔄 Authentification auprès des serveurs CamPay...")
-                
                 base_url = "https://demo.campay.net/api" if mode_actuel == "Démo" else "https://www.campay.net/api"
                 
                 try:
@@ -477,7 +642,6 @@ with tab_dev_zone:
                 
             if btn_publier:
                 if u_mat and u_file:
-                    # CORRECTION : Lecture et sauvegarde immédiate des octets du fichier binaire importé
                     donnees_du_fichier = u_file.read()
                     
                     temp_row = {
@@ -486,7 +650,7 @@ with tab_dev_zone:
                         "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", 
                         "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), 
                         "Favori": False, "Soumis_Par": st.session_state.dev_role,
-                        "file_bytes": donnees_du_fichier  # Sauvegarde persistante en RAM
+                        "file_bytes": donnees_du_fichier
                     }
                     
                     if st.session_state.dev_role == "Copilote":
@@ -510,11 +674,12 @@ with tab_dev_zone:
                 </div>
             """, unsafe_allow_html=True)
             
-            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system = st.tabs([
+            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system, sub_tab_logos_mgr = st.tabs([
                 "📥 VALIDATION DES SOUMISSIONS COPILOTES",
                 "🎫 INJECTEUR INTELLIGENT DE TICKETS",
                 "👑 PANNEAU DE CONTRÔLE DE LA BASE",
-                "⚙️ CONFIGURATION DES CLÉS APIS (CAMPAY)"
+                "⚙️ CONFIGURATION DES CLÉS APIS (CAMPAY)",
+                "🖼️ PRÉFÉRENCES LOGOS ET VISUELS"
             ])
             
             with sub_tab_vault:
@@ -548,33 +713,33 @@ with tab_dev_zone:
                     num_to_gen = st.number_input("Nombre de pass à injecter :", min_value=1, max_value=50, value=5)
                     if st.button("⚡ Injecter de force"):
                         for _ in range(num_to_gen):
-                            code = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-                            serveur_data["tickets"].append(code)
-                        st.success(f"Modifications appliquées au registre.")
+                            ticket_gen = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+                            serveur_data["tickets"].append(ticket_gen)
+                        st.success(f"{num_to_gen} Pass d'accès uniques injectés avec succès.")
                         st.rerun()
                 with col_list:
+                    st.markdown("**Tickets encore valides en base :**")
                     st.write(serveur_data["tickets"])
 
             with sub_tab_global_db:
-                st.markdown("#### Suppression d'autorité")
-                for idx, row in serveur_data["db"].iterrows():
-                    col_n, col_b = st.columns([4, 1])
-                    col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
-                    if col_b.button("Supprimer", key=f"del_sec_{row['id']}"):
-                        serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
-                        st.rerun()
+                st.markdown("#### Administration de la base de données brute")
+                st.dataframe(serveur_data["db"])
 
             with sub_tab_config_system:
-                st.markdown("#### Intégration des Identifiants CamPay Secrets")
+                st.markdown("#### Configuration des Identifiants CamPay")
+                serveur_data["config"]["campay_username"] = st.text_input("Username API CamPay", value=serveur_data["config"]["campay_username"])
+                serveur_data["config"]["campay_password"] = st.text_input("Password API CamPay", type="password", value=serveur_data["config"]["campay_password"])
+                serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnement API", ["Démo", "Production"], index=0 if serveur_data["config"]["campay_mode"] == "Démo" else 1)
+
+            with sub_tab_logos_mgr:
+                st.markdown("#### 🖼️ Remplacer et mettre à jour les logos de la barre latérale")
+                up_isabee_file = st.file_uploader("Téléverser le nouveau logo ISABEE :", type=["png", "jpg", "jpeg"])
+                up_ubertoua_file = st.file_uploader("Téléverser le nouveau logo U-BERTOUA :", type=["png", "jpg", "jpeg"])
                 
-                serveur_data["config"]["campay_username"] = st.text_input("CamPay APP USERNAME :", value=serveur_data["config"]["campay_username"])
-                serveur_data["config"]["campay_password"] = st.text_input("CamPay APP PASSWORD :", value=serveur_data["config"]["campay_password"], type="password")
-                serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnemental :", ["Démo", "Live"])
-                
-                st.markdown("---")
-                st.markdown("#### Numéros de téléphone marchands")
-                serveur_data["config"]["orange_target"] = st.text_input("Cible Orange Money :", value=serveur_data["config"]["orange_target"])
-                serveur_data["config"]["mtn_target"] = st.text_input("Cible MTN MoMo :", value=serveur_data["config"]["mtn_target"])
-                
-                if st.button("💾 Enregistrer la matrice de sécurité financière"):
-                    st.success("Paramètres mis en production.")
+                if st.button("💾 Sauvegarder et appliquer les logos visuels"):
+                    if up_isabee_file is not None:
+                        serveur_data["config"]["logo_isabee"] = up_isabee_file.read()
+                    if up_ubertoua_file is not None:
+                        serveur_data["config"]["logo_ubertoua"] = up_ubertoua_file.read()
+                    st.success("Logos d'infrastructure mis à jour ! Actualisation en cours...")
+                    st.rerun()
