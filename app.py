@@ -391,7 +391,87 @@ with tab_dev_zone:
                 u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
                 u_file = st.file_uploader("Fichier")
                 
-                if st.form_submit_button("PUBLIER LE DOCUMENT"):
-                    if u_mat and u_file:
-                        new_row = {"id": len(serveur_data["db"]) + 1, "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), "Favori": False}
-                        serveur_data["db"] = pd.concat([serveur_data["db"], pd.DataFrame(
+                # AJUSTEMENT : Bouton placé précisément pour fermer le formulaire correctement
+                btn_publier = st.form_submit_button("PUBLIER LE DOCUMENT")
+                
+            if btn_publier:
+                if u_mat and u_file:
+                    new_row = {
+                        "id": len(serveur_data["db"]) + 1, 
+                        "Cycle": u_cyc, 
+                        "Filière": u_fil, 
+                        "Niveau": u_niv, 
+                        "Matière": u_mat, 
+                        "Enseignant": u_prof, 
+                        "Type": u_type, 
+                        "Année": "2025-2026", 
+                        "Premium": u_prem, 
+                        "Downloads": 0, 
+                        "Date": datetime.today().strftime('%d/%m/%Y'), 
+                        "Favori": False
+                    }
+                    # AJUSTEMENT : Découpage propre pour éviter l'erreur de parenthèse (SyntaxError)
+                    new_df = pd.DataFrame([new_row])
+                    serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
+                    st.success("Publié sur toutes les machines !")
+                    st.rerun()
+        
+        # 2. MES FAVORIS
+        with sub_tab_fav:
+            st.markdown("#### Tes favoris enregistrés")
+            df_fav = serveur_data["db"][serveur_data["db"]['Favori'] == True]
+            if df_fav.empty:
+                st.info("Aucun favori enregistré.")
+            else:
+                for idx, row in df_fav.iterrows():
+                    st.write(f"• **{row['Matière']}** ({row['Niveau']})")
+        
+        # 3. PANNEAU DE CONTRÔLE
+        with sub_tab_control:
+            st.markdown("#### Gestion Globale en Temps Réel")
+            st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
+            
+            for idx, row in serveur_data["db"].iterrows():
+                col_n, col_b = st.columns([4, 1])
+                col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
+                if col_b.button("Supprimer", key=f"del_{row['id']}"):
+                    serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
+                    st.rerun()
+                    
+        # 4. RECONNAISSANCE 
+        with sub_tab_thanks:
+            col_av, col_rem = st.columns(2)
+            with col_av:
+                st.write("#### ⭐ Évaluations Reçues")
+                for a in serveur_data["interactions"]["avis"]:
+                    st.markdown(f"**{a['user']}** ({a['note']}★) : _{a['text']}_")
+            with col_rem:
+                st.write("#### 🙏 Mots de gratitude reçus")
+                for r in serveur_data["interactions"]["remerciements"]:
+                    st.write(f"• {r}")
+                    
+        # 5. CONFIGURATION
+        with sub_tab_config:
+            st.markdown("#### 🛠️ Paramètres du Système Principal")
+            
+            new_pwd = st.text_input("Modifier le mot de passe Admin Global :", value=serveur_data["config"]["dev_password"], type="password")
+            if st.button("Enregistrer le nouveau mot de passe"):
+                serveur_data["config"]["dev_password"] = new_pwd
+                st.success("Le nouveau code d'accès administrateur est opérationnel !")
+            
+            st.markdown("---")
+            st.markdown("#### 🖼️ Cadres d'Importation des Logos")
+            
+            up_isabee = st.file_uploader("Importer le Logo ISABEE :", key="upload_isabee_logo")
+            if up_isabee is not None:
+                serveur_data["config"]["logo_isabee"] = up_isabee
+                st.success("Logo ISABEE enregistré au niveau central !")
+                
+            up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua :", key="upload_ubertoua_logo")
+            if up_ubertoua is not None:
+                serveur_data["config"]["logo_ubertoua"] = up_ubertoua
+                st.success("Logo U-BERTOUA enregistré au niveau central !")
+                
+            if up_isabee or up_ubertoua:
+                if st.button("Rafraîchir pour appliquer les nouveaux visuels"):
+                    st.rerun()
