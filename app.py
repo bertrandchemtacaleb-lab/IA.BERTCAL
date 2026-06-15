@@ -4,7 +4,7 @@ import difflib
 from datetime import datetime
 
 # ==============================================================================
-# 1. ARCHITECTURE VISUELLE & INJECTION CSS AVANCÉE
+# 1. ARCHITECTURE VISUELLE & INJECTION CSS AVANCÉE (ANTI-ÉCRAN BLANC)
 # ==============================================================================
 st.set_page_config(
     page_title="SOURCE ISABEE — L'Élite Académique",
@@ -13,12 +13,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Forçage absolu du thème sombre sur tous les éléments structurels de Streamlit
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* FORCE LE THÈME SOMBRE ET FLUIDE */
-    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
+    /* FORCE LE THÈME SOMBRE ET FLUIDE - ÉVITE L'ÉCRAN BLANC SUR MOBILE EN LIGHT MODE */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
         background: #010D08 !important;
         background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
         color: #FFFFFF !important;
@@ -29,7 +30,7 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* BOUTON FLÈCHE FLOTTANTE DE LA SIDEBAR ULTRA-VISIBLE ET AGRANDIE */
+    /* BOUTON FLÈCHE FLOTTANTE DE LA SIDEBAR ULTRA-VISIBLE */
     [data-testid="collapsedControl"] {
         background-color: #021F14 !important;
         border: 2px solid #10B981 !important;
@@ -40,17 +41,13 @@ st.markdown("""
         align-items: center !important;
         justify-content: center !important;
         box-shadow: 0 0 20px #10B981 !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.3s ease !important;
     }
     [data-testid="collapsedControl"] svg {
         width: 32px !important;
         height: 32px !important;
         fill: #34D399 !important;
         color: #34D399 !important;
-    }
-    [data-testid="collapsedControl"]:hover {
-        transform: scale(1.15) rotate(180deg) !important;
-        box-shadow: 0 0 30px #34D399 !important;
     }
     
     /* TITRES LUMINEUX NÉON */
@@ -112,7 +109,6 @@ st.markdown("""
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
     }
 
-    /* CADRES CADRÉS POUR LOGOS DANS LA SIDEBAR */
     .big-logo-box {
         background: rgba(255, 255, 255, 0.02) !important;
         border: 2px dashed #10B981 !important;
@@ -128,7 +124,6 @@ st.markdown("""
         justify-content: center;
     }
 
-    /* SIGNATURE PROFESSIONNELLE EN BLEU ET CENTRÉE */
     .sidebar-blue-footer {
         border-top: 1px solid rgba(56, 189, 248, 0.2);
         padding-top: 20px;
@@ -155,7 +150,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. LE CERVEAU CENTRALISÉ (PARTAGÉ ENTRE TOUS LES TÉLÉPHONES)
+# 2. LE CERVEAU CENTRALISÉ (PARTAGÉ SUR LE SERVEUR)
 # ==============================================================================
 FILIERES = [
     "Production Végétale", "Production Animale", "Protection des Cultures",
@@ -170,7 +165,6 @@ FILIERES = [
 
 @st.cache_resource
 def initialiser_base_globale():
-    """Cette fonction crée la mémoire partagée unique pour tout le serveur."""
     base_sujets = pd.DataFrame([
         {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique et Transfert Thermique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Date": "12/03/2026", "Favori": False},
         {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides Appliquée + CORRIGÉ", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 92, "Date": "18/03/2026", "Favori": False}
@@ -181,27 +175,20 @@ def initialiser_base_globale():
         "avis": [{"user": "Anonyme", "note": 5, "text": "L'interface à 300F vaut largement le coup !"}],
         "remerciements": ["Merci à Bertcal pour cette initiative de génie sur le campus."]
     }
-    config = {
-        "dev_password": "admin",
-        "logo_isabee": None,
-        "logo_ubertoua": None
-    }
+    config = {"dev_password": "admin", "logo_isabee": None, "logo_ubertoua": None}
     return {"db": base_sujets, "interactions": interactions, "config": config}
 
-# Chargement du Cerveau Commun
 serveur_data = initialiser_base_globale()
 
-# Initialisation des variables privées (Propres à chaque téléphone)
 if 'is_premium_user' not in st.session_state:
     st.session_state.is_premium_user = False
 if 'dev_logged_in' not in st.session_state:
     st.session_state.dev_logged_in = False
 
 # ==============================================================================
-# 3. BARRE LATÉRALE (LOGOS INTERACTIFS, FILTRES, SIGNATURE BLEUE CENTRÉE)
+# 3. BARRE LATÉRALE (FILTRES & CONTACTS)
 # ==============================================================================
 with st.sidebar:
-    # Lecture des logos depuis le serveur commun
     col_l1, col_l2 = st.columns(2)
     with col_l1:
         if serveur_data["config"]["logo_isabee"] is not None:
@@ -217,7 +204,6 @@ with st.sidebar:
     st.markdown("### 🔑 ACCÈS COMPTE")
     user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
 
-    # Système Premium local à chaque étudiant
     if not st.session_state.is_premium_user:
         activation_key = st.text_input("Saisir la clé Premium (300F) :", type="password")
         if st.button("Activer Premium"):
@@ -236,7 +222,6 @@ with st.sidebar:
     f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
     f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
 
-    # Informations de contact impeccablement centrées et bleues
     st.markdown(f"""
         <div class="sidebar-blue-footer">
             Développé par: <b>Chemta Caleb Bertrand</b><br>
@@ -250,7 +235,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE PRINCIPAL PUBLIC (SIGNE BERTCAL)
+# 4. EN-TÊTE PRINCIPAL
 # ==============================================================================
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
@@ -262,14 +247,13 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Application des filtres de recherche sur la base globale
 df_view = serveur_data["db"].copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
 if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
 if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ==============================================================================
-# 5. ONGLETS DE SÉPARATION (PUBLIC VS ADMINISTRATEUR)
+# 5. ONGLETS DE NAVIGATION
 # ==============================================================================
 tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
     "📂 ARCHIVES ACADÉMIQUES", 
@@ -277,12 +261,10 @@ tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
     "🔒 ACCÈS DÉVELOPPEUR"
 ])
 
-# ------------------------------------------------------------------------------
-# PARTIE UTILISATEURS GENERAUX
-# ------------------------------------------------------------------------------
+# --- ONGLET 1 : ARCHIVES PUBLIC ---
 with tab_public_content:
     st.markdown("### 🔍 Rechercher une archive")
-    search_bar = st.text_input("Saisir le nom d'une UE :", placeholder="Ex: Thermodinamique...")
+    search_bar = st.text_input("Saisir le nom d'une UE :", placeholder="Ex: Thermodynamique...")
     
     if search_bar:
         matches = []
@@ -323,6 +305,7 @@ with tab_public_content:
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
                     st.toast("Ajouté aux favoris privés !")
 
+# --- ONGLET 2 : INTERACTIONS ---
 with tab_public_interact:
     st.markdown("### 🗣️ Espace Interactif des Étudiants")
     col_comm, col_sug = st.columns(2)
@@ -349,9 +332,7 @@ with tab_public_interact:
                 serveur_data["interactions"]["suggestions"].append(txt_s)
                 st.rerun()
 
-# ------------------------------------------------------------------------------
-# PARTIE ADMINISTRATEUR PRIVE
-# ------------------------------------------------------------------------------
+# --- ONGLET 3 : PRIVÉ ADMIN (BERTCAL) ---
 with tab_dev_zone:
     st.markdown("### 🔐 Espace de Gestion Privé (Bertcal)")
     
@@ -371,14 +352,10 @@ with tab_dev_zone:
             
         st.markdown("---")
         sub_tab_upload, sub_tab_fav, sub_tab_control, sub_tab_thanks, sub_tab_config = st.tabs([
-            "🚀 DÉPÔT ÉLITE", 
-            "⭐ MES FAVORIS", 
-            "👑 PANNEAU DE CONTRÔLE", 
-            "🤝 RECONNAISSANCE",
-            "⚙️ CONFIGURATION INTERNE"
+            "🚀 DÉPÔT ÉLITE", "⭐ MES FAVORIS", "👑 PANNEAU DE CONTRÔLE", "🤝 RECONNAISSANCE", "⚙️ CONFIGURATION INTERNE"
         ])
         
-        # 1. DEPOT ELITE
+        # 1. DEPOT ELITE (CORRIGÉ ET SÉCURISÉ)
         with sub_tab_upload:
             st.markdown("#### Téléversement de nouvelles épreuves")
             with st.form("upload_form"):
@@ -391,13 +368,13 @@ with tab_dev_zone:
                 u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
                 u_file = st.file_uploader("Fichier")
                 
-                # AJUSTEMENT : Bouton placé précisément pour fermer le formulaire correctement
+                # Le bouton de validation est STRICTEMENT à l'intérieur du bloc 'with'
                 btn_publier = st.form_submit_button("PUBLIER LE DOCUMENT")
                 
             if btn_publier:
                 if u_mat and u_file:
                     new_row = {
-                        "id": len(serveur_data["db"]) + 1, 
+                        "id": int(len(serveur_data["db"]) + 1), 
                         "Cycle": u_cyc, 
                         "Filière": u_fil, 
                         "Niveau": u_niv, 
@@ -410,11 +387,13 @@ with tab_dev_zone:
                         "Date": datetime.today().strftime('%d/%m/%Y'), 
                         "Favori": False
                     }
-                    # AJUSTEMENT : Découpage propre pour éviter l'erreur de parenthèse (SyntaxError)
+                    # Concaténation propre et découpée (Zéro erreur de parenthèse non fermée)
                     new_df = pd.DataFrame([new_row])
                     serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
-                    st.success("Publié sur toutes les machines !")
+                    st.success("Publié avec succès !")
                     st.rerun()
+                else:
+                    st.error("Champs obligatoires manquants (Nom de matière ou Fichier).")
         
         # 2. MES FAVORIS
         with sub_tab_fav:
@@ -450,28 +429,26 @@ with tab_dev_zone:
                 for r in serveur_data["interactions"]["remerciements"]:
                     st.write(f"• {r}")
                     
-        # 5. CONFIGURATION
+        # 5. CONFIGURATION INTERNE
         with sub_tab_config:
             st.markdown("#### 🛠️ Paramètres du Système Principal")
-            
             new_pwd = st.text_input("Modifier le mot de passe Admin Global :", value=serveur_data["config"]["dev_password"], type="password")
             if st.button("Enregistrer le nouveau mot de passe"):
                 serveur_data["config"]["dev_password"] = new_pwd
-                st.success("Le nouveau code d'accès administrateur est opérationnel !")
+                st.success("Mot de passe mis à jour !")
             
             st.markdown("---")
             st.markdown("#### 🖼️ Cadres d'Importation des Logos")
-            
             up_isabee = st.file_uploader("Importer le Logo ISABEE :", key="upload_isabee_logo")
             if up_isabee is not None:
                 serveur_data["config"]["logo_isabee"] = up_isabee
-                st.success("Logo ISABEE enregistré au niveau central !")
+                st.success("Logo ISABEE mis à jour !")
                 
             up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua :", key="upload_ubertoua_logo")
             if up_ubertoua is not None:
                 serveur_data["config"]["logo_ubertoua"] = up_ubertoua
-                st.success("Logo U-BERTOUA enregistré au niveau central !")
+                st.success("Logo U-BERTOUA mis à jour !")
                 
             if up_isabee or up_ubertoua:
-                if st.button("Rafraîchir pour appliquer les nouveaux visuels"):
+                if st.button("Rafraîchir pour appliquer les visuels"):
                     st.rerun()
