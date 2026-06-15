@@ -151,11 +151,20 @@ st.markdown("""
     }
     .badge-premium { background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
     .badge-free { background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
+    
+    /* COMPTEURS ET ALERTES DESIGN MAISON VIRTUELLE */
+    .owner-box {
+        background: rgba(56, 189, 248, 0.05) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. LE CERVEAU CENTRALISÉ (PARTAGÉ ENTRE TOUS LES TÉLÉPHONES)
+# 2. LE CERVEAU CENTRALISÉ AVEC DOUBLE SÉCURITÉ & LISTE DE TICKETS INTELLIGENTE
 # ==============================================================================
 FILIERES = [
     "Production Végétale", "Production Animale", "Protection des Cultures",
@@ -170,38 +179,48 @@ FILIERES = [
 
 @st.cache_resource
 def initialiser_base_globale():
-    """Cette fonction crée la mémoire partagée unique pour tout le serveur."""
+    # Base de sujets avec colonne 'Approuvé' pour le contrôle du Concepteur
     base_sujets = pd.DataFrame([
-        {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique et Transfert Thermique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Date": "12/03/2026", "Favori": False},
-        {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides Appliquée + CORRIGÉ", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 92, "Date": "18/03/2026", "Favori": False}
+        {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique et Transfert Thermique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Date": "12/03/2026", "Favori": False, "Approuvé": True},
+        {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides Appliquée + CORRIGÉ", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 92, "Date": "18/03/2026", "Favori": False, "Approuvé": True}
     ])
+    
+    # Espace des interactions partagées
     interactions = {
         "commentaires": ["Excellente lisibilité sur les sujets de Génie Énergétique.", "Sujet de Thermo Ing4 disponible !"],
         "suggestions": ["Ajouter les TP de chimie des solutions pour les L1."],
         "avis": [{"user": "Anonyme", "note": 5, "text": "L'interface à 300F vaut largement le coup !"}],
         "remerciements": ["Merci à Bertcal pour cette initiative de génie sur le campus."]
     }
+    
+    # Base intelligente de tickets à usage unique (Single Use Security)
+    tickets_actifs = {
+        "ISABEE-7762": {"statut": "Disponible", "date_creation": "15/06/2026", "utilise_par": ""},
+        "ISABEE-3341": {"statut": "Disponible", "date_creation": "15/06/2026", "utilise_par": ""}
+    }
+    
+    # Configuration des accès secrets de l'infrastructure
     config = {
-        "dev_password": "admin",
+        "copilot_password": "copilote",  # Mot de passe pour tes copilotes
+        "owner_password": "owner",      # Ton mot de passe maître personnel (Maison Virtuelle)
         "logo_isabee": None,
         "logo_ubertoua": None
     }
-    return {"db": base_sujets, "interactions": interactions, "config": config}
+    return {"db": base_sujets, "interactions": interactions, "tickets": tickets_actifs, "config": config}
 
-# Chargement du Cerveau Commun
+# Appel du serveur de stockage global
 serveur_data = initialiser_base_globale()
 
-# Initialisation des variables privées (Propres à chaque téléphone)
+# Variables de sessions locales (propres à chaque téléphone individuel)
 if 'is_premium_user' not in st.session_state:
     st.session_state.is_premium_user = False
-if 'dev_logged_in' not in st.session_state:
-    st.session_state.dev_logged_in = False
+if 'user_role' not in st.session_state:
+    st.session_state.user_role = "Visiteur" # Peut devenir "Copilote" ou "Owner"
 
 # ==============================================================================
 # 3. BARRE LATÉRALE (LOGOS INTERACTIFS, FILTRES, SIGNATURE BLEUE CENTRÉE)
 # ==============================================================================
 with st.sidebar:
-    # Lecture des logos depuis le serveur commun
     col_l1, col_l2 = st.columns(2)
     with col_l1:
         if serveur_data["config"]["logo_isabee"] is not None:
@@ -214,19 +233,35 @@ with st.sidebar:
         else:
             st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
             
-    st.markdown("### 🔑 ACCÈS COMPTE")
-    user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
+    st.markdown("### 🔑 SÉCURITÉ & PREMIUM")
+    user_matricule = st.text_input("Identifiant / Matricule Étudiant :", value="22I0000B")
 
-    # Système Premium local à chaque étudiant
+    # Zone d'activation avec processus d'information de paiement
     if not st.session_state.is_premium_user:
-        activation_key = st.text_input("Saisir la clé Premium (300F) :", type="password")
-        if st.button("Activer Premium"):
-            if activation_key == "isabee300":
+        st.markdown("""
+            <div style="background:rgba(245,158,11,0.1); border:1px solid #F59E0B; padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:10px;">
+                <b>Frais d'activation : 300F</b><br>
+                🟠 Orange Money : <b>696 07 56 60</b><br>
+                🟡 MTN MoMo : <b>654 04 67 92</b><br>
+                <i>Envoyez vos frais pour recevoir votre ticket unique.</i>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        input_ticket = st.text_input("Saisir votre Ticket d'accès Unique :", type="default")
+        if st.button("Valider et Activer mon Ticket"):
+            input_ticket = input_ticket.strip()
+            if input_ticket in serveur_data["tickets"] and serveur_data["tickets"][input_ticket]["statut"] == "Disponible":
+                # Consommation immédiate du ticket à usage unique
+                serveur_data["tickets"][input_ticket]["statut"] = "Consommé"
+                serveur_data["tickets"][input_ticket]["utilise_par"] = user_matricule
                 st.session_state.is_premium_user = True
+                st.success("🎉 Ticket validé avec succès ! Mode Premium déverrouillé.")
                 st.rerun()
+            else:
+                st.error("Ticket invalide, expiré ou déjà consommé.")
     else:
-        st.success("👑 Premium Actif")
-        if st.button("Retour Mode Gratuit"):
+        st.success("👑 Accès Premium Activé")
+        if st.button("Désactiver le Premium"):
             st.session_state.is_premium_user = False
             st.rerun()
 
@@ -236,7 +271,7 @@ with st.sidebar:
     f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
     f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
 
-    # Informations de contact impeccablement centrées et bleues
+    # Coordonnées professionnelles, centrées et bleues
     st.markdown(f"""
         <div class="sidebar-blue-footer">
             Développé par: <b>Chemta Caleb Bertrand</b><br>
@@ -250,7 +285,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE PRINCIPAL PUBLIC (SIGNE BERTCAL)
+# 4. EN-TÊTE PRINCIPAL PUBLIC
 # ==============================================================================
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
@@ -262,27 +297,27 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Application des filtres de recherche sur la base globale
-df_view = serveur_data["db"].copy()
+# Application des filtres : Les utilisateurs voient uniquement les fichiers approuvés
+df_view = serveur_data["db"][serveur_data["db"]['Approuvé'] == True].copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
 if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
 if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ==============================================================================
-# 5. ONGLETS DE SÉPARATION (PUBLIC VS ADMINISTRATEUR)
+# 5. ONGLETS DE SÉPARATION (PUBLIC & ZONE TECHNIQUE PAR MOT DE PASSE)
 # ==============================================================================
 tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
     "📂 ARCHIVES ACADÉMIQUES", 
     "💬 DISCUSSIONS & SUGGESTIONS", 
-    "🔒 ACCÈS DÉVELOPPEUR"
+    "🔒 ACCÈS PANNEAU TECHNIQUE"
 ])
 
 # ------------------------------------------------------------------------------
-# PARTIE UTILISATEURS GENERAUX
+# ZONE 1 : INTERFACE PUBLIQUE
 # ------------------------------------------------------------------------------
 with tab_public_content:
     st.markdown("### 🔍 Rechercher une archive")
-    search_bar = st.text_input("Saisir le nom d'une UE :", placeholder="Ex: Thermodinamique...")
+    search_bar = st.text_input("Saisir le nom d'une UE :", placeholder="Ex: Thermodynamique...")
     
     if search_bar:
         matches = []
@@ -313,7 +348,7 @@ with tab_public_content:
             c1, c2 = st.columns(2)
             with c1:
                 if row['Premium'] and not st.session_state.is_premium_user:
-                    st.button("🔒 Débloquer le corrigé (300F requis)", key=f"l_{row['id']}", disabled=True)
+                    st.button("🔒 Débloquer le corrigé (Ticket Requis)", key=f"l_{row['id']}", disabled=True)
                 else:
                     if st.button(f"📥 Télécharger le PDF", key=f"d_{row['id']}"):
                         serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Downloads'] += 1
@@ -324,7 +359,7 @@ with tab_public_content:
                     st.toast("Ajouté aux favoris privés !")
 
 with tab_public_interact:
-    st.markdown("### 🗣️ Espace Interactif des Étudiants")
+    st.markdown("### 🗣️ Espace Interactif des Étudiants (Commentaires & Suggestions)")
     col_comm, col_sug = st.columns(2)
     
     with col_comm:
@@ -334,126 +369,149 @@ with tab_public_interact:
         
         with st.form("new_comment_form", clear_on_submit=True):
             txt_c = st.text_input("Laisser un commentaire :")
-            if st.form_submit_button("Envoyer le commentaire") and txt_c:
+            if st.form_submit_button("Envoyer") and txt_c:
                 serveur_data["interactions"]["commentaires"].append(txt_c)
                 st.rerun()
 
     with col_sug:
-        st.subheader("💡 Suggestions")
+        st.subheader("💡 Suggestions d'amélioration")
         for s in serveur_data["interactions"]["suggestions"]:
             st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:8px;'>💡 {s}</div>", unsafe_allow_html=True)
             
         with st.form("new_sug_form", clear_on_submit=True):
-            txt_s = st.text_input("Proposer un document ou une idée :")
-            if st.form_submit_button("Soumettre la suggestion") and txt_s:
+            txt_s = st.text_input("Proposer un document ou un changement :")
+            if st.form_submit_button("Soumettre") and txt_s:
                 serveur_data["interactions"]["suggestions"].append(txt_s)
                 st.rerun()
 
 # ------------------------------------------------------------------------------
-# PARTIE ADMINISTRATEUR PRIVE
+# ZONE 2 : PANNEAU DES PASSERELLES (SÉCURISÉ PAR DEUX MOTS DE PASSE DISTINCTS)
 # ------------------------------------------------------------------------------
 with tab_dev_zone:
-    st.markdown("### 🔐 Espace de Gestion Privé (Bertcal)")
-    
-    if not st.session_state.dev_logged_in:
-        input_pwd = st.text_input("Entrez le mot de passe Développeur :", type="password")
-        if st.button("Déverrouiller les accès"):
-            if input_pwd == serveur_data["config"]["dev_password"]:
-                st.session_state.dev_logged_in = True
-                st.success("Authentification réussie !")
+    if st.session_state.user_role == "Visiteur":
+        st.markdown("### 🔐 Identification de Sécurité")
+        st.info("Le système détecte automatiquement vos privilèges selon le code secret introduit.")
+        
+        secret_code = st.text_input("Entrer votre clé d'authentification :", type="password")
+        if st.button("Ouvrir la session"):
+            if secret_code == serveur_data["config"]["owner_password"]:
+                st.session_state.user_role = "Owner"
+                st.success("Bienvenue dans votre Maison Virtuelle, Concepteur en chef !")
+                st.rerun()
+            elif secret_code == serveur_data["config"]["copilot_password"]:
+                st.session_state.user_role = "Copilote"
+                st.success("Connexion Copilote établie. Accès restreint accordé.")
                 st.rerun()
             else:
-                st.error("Mot de passe incorrect.")
+                st.error("Clé secrète invalide.")
     else:
-        if st.button("🔒 Déconnexion de l'espace Admin"):
-            st.session_state.dev_logged_in = False
+        # Affichage du profil connecté
+        col_title, col_logout = st.columns([4, 1])
+        if st.session_state.user_role == "Owner":
+            col_title.markdown("#### 🏛️ MAISON VIRTUELLE DE BERTCAL (Accès Maître)")
+        else:
+            col_title.markdown("#### 🚀 ESPACE COPILOTE (Téléversement Uniquement)")
+            
+        if col_logout.button("🔒 Fermer la Session"):
+            st.session_state.user_role = "Visiteur"
             st.rerun()
             
         st.markdown("---")
-        sub_tab_upload, sub_tab_fav, sub_tab_control, sub_tab_thanks, sub_tab_config = st.tabs([
-            "🚀 DÉPÔT ÉLITE", 
-            "⭐ MES FAVORIS", 
-            "👑 PANNEAU DE CONTRÔLE", 
-            "🤝 RECONNAISSANCE",
-            "⚙️ CONFIGURATION INTERNE"
-        ])
         
-        # 1. DEPOT ELITE
-        with sub_tab_upload:
-            st.markdown("#### Téléversement de nouvelles épreuves")
-            with st.form("upload_form"):
+        # --- CAS 1 : VUE RESTREINTE POUR LES COPILOTES ---
+        if st.session_state.user_role == "Copilote":
+            st.warning("⚠️ Vos fichiers seront envoyés au Concepteur en chef pour validation avant publication officielle.")
+            with st.form("copilot_upload_form"):
                 u_mat = st.text_input("Nom de la matière :")
                 u_cyc = st.selectbox("Cycle", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
                 u_fil = st.selectbox("Filière", FILIERES)
                 u_niv = st.selectbox("Niveau", ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5", "M1", "M2"])
                 u_type = st.selectbox("Type", ["CC", "Examen", "Rattrapage", "TP"])
                 u_prof = st.text_input("Enseignant :")
-                u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
-                u_file = st.file_uploader("Fichier")
+                u_prem = st.checkbox("Mettre en Premium (Bloqué derrière ticket)")
+                u_file = st.file_uploader("Fichier épreuve")
                 
-                if st.form_submit_button("PUBLIER LE DOCUMENT"):
+                if st.form_submit_button("SOUMETTRE À BERTCAL"):
                     if u_mat and u_file:
-                        new_row = {"id": len(serveur_data["db"]) + 1, "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), "Favori": False}
+                        new_row = {
+                            "id": len(serveur_data["db"]) + 1, "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, 
+                            "Matière": u_mat, "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", 
+                            "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), 
+                            "Favori": False, 
+                            "Approuvé": False # En attente de ta validation !
+                        }
                         serveur_data["db"] = pd.concat([serveur_data["db"], pd.DataFrame([new_row])], ignore_index=True)
-                        st.success("Publié sur toutes les machines !")
-                        st.rerun()
-        
-        # 2. MES FAVORIS
-        with sub_tab_fav:
-            st.markdown("#### Tes favoris enregistrés")
-            df_fav = serveur_data["db"][serveur_data["db"]['Favori'] == True]
-            if df_fav.empty:
-                st.info("Aucun favori enregistré.")
-            else:
-                for idx, row in df_fav.iterrows():
-                    st.write(f"• **{row['Matière']}** ({row['Niveau']})")
-        
-        # 3. PANNEAU DE CONTRÔLE
-        with sub_tab_control:
-            st.markdown("#### Gestion Globale en Temps Réel")
-            st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
+                        st.success("Fichier mis en attente d'approbation avec succès !")
+                        
+        # --- CAS 2 : MAISON VIRTUELLE DU CONCEPTEUR EN CHEF (TOUS LES DROITS) ---
+        elif st.session_state.user_role == "Owner":
+            sub_tabs = st.tabs([
+                "📥 COMPTEUR & APPROBATIONS", 
+                "🎫 ENTRÉE ET TICKETS INTELLIGENTS", 
+                "🚀 DÉPÔT ÉLITE (DIRECT)", 
+                "👑 PANNEAU DE CONTRÔLE", 
+                "🤝 RECONNAISSANCE & CONFIGS"
+            ])
             
-            for idx, row in serveur_data["db"].iterrows():
-                col_n, col_b = st.columns([4, 1])
-                col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
-                if col_b.button("Supprimer", key=f"del_{row['id']}"):
-                    serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
-                    st.rerun()
-                    
-        # 4. RECONNAISSANCE 
-        with sub_tab_thanks:
-            col_av, col_rem = st.columns(2)
-            with col_av:
-                st.write("#### ⭐ Évaluations Reçues")
-                for a in serveur_data["interactions"]["avis"]:
-                    st.markdown(f"**{a['user']}** ({a['note']}★) : _{a['text']}_")
-            with col_rem:
-                st.write("#### 🙏 Mots de gratitude reçus")
-                for r in serveur_data["interactions"]["remerciements"]:
-                    st.write(f"• {r}")
-                    
-        # 5. CONFIGURATION
-        with sub_tab_config:
-            st.markdown("#### 🛠️ Paramètres du Système Principal")
-            
-            new_pwd = st.text_input("Modifier le mot de passe Admin Global :", value=serveur_data["config"]["dev_password"], type="password")
-            if st.button("Enregistrer le nouveau mot de passe"):
-                serveur_data["config"]["dev_password"] = new_pwd
-                st.success("Le nouveau code d'accès administrateur est opérationnel !")
-            
-            st.markdown("---")
-            st.markdown("#### 🖼️ Cadres d'Importation des Logos")
-            
-            up_isabee = st.file_uploader("Importer le Logo ISABEE :", key="upload_isabee_logo")
-            if up_isabee is not None:
-                serveur_data["config"]["logo_isabee"] = up_isabee
-                st.success("Logo ISABEE enregistré au niveau central !")
+            # Sous-onglet 1 : Approbation des fichiers envoyés par les copilotes
+            with sub_tabs[0]:
+                st.markdown("#### 🔎 Fichiers en attente de votre validation")
+                df_pending = serveur_data["db"][serveur_data["db"]['Approuvé'] == False]
                 
-            up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua :", key="upload_ubertoua_logo")
-            if up_ubertoua is not None:
-                serveur_data["config"]["logo_ubertoua"] = up_ubertoua
-                st.success("Logo U-BERTOUA enregistré au niveau central !")
+                if df_pending.empty:
+                    st.info("Aucun document en attente d'approbation pour le moment.")
+                else:
+                    for idx, row in df_pending.iterrows():
+                        with st.container():
+                            st.markdown(f"""
+                                <div class="owner-box">
+                                    <b>Matière :</b> {row['Matière']} | <b>Filière :</b> {row['Filière']} ({row['Niveau']})<br>
+                                    <b>Type :</b> {row['Type']} | <b>Premium demandé :</b> {'Oui' if row['Premium'] else 'Non'}
+                                </div>
+                            """, unsafe_allow_html=True)
+                            col_app, col_rej = st.columns(2)
+                            if col_app.button("✅ Approuver et Publier", key=f"app_{row['id']}"):
+                                serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Approuvé'] = True
+                                st.success("Document visible par les étudiants !")
+                                st.rerun()
+                            if col_rej.button("❌ Rejeter / Supprimer", key=f"rej_{row['id']}"):
+                                serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
+                                st.warning("Document rejeté.")
+                                st.rerun()
+            
+            # Sous-onglet 2 : Gestion des Tickets Intelligents à Usage Unique
+            with sub_tabs[1]:
+                st.markdown("#### 🎫 Générateur de Tickets d'Accès Unique")
                 
-            if up_isabee or up_ubertoua:
-                if st.button("Rafraîchir pour appliquer les nouveaux visuels"):
-                    st.rerun()
+                with st.form("ticket_generation_form"):
+                    nouveau_code = st.text_input("Créer un Code Ticket Unique (Ex: ISABEE-XXXX) :").strip()
+                    if st.form_submit_button("Enregistrer et Activer le Ticket"):
+                        if nouveau_code:
+                            if nouveau_code not in serveur_data["tickets"]:
+                                serveur_data["tickets"][nouveau_code] = {
+                                    "statut": "Disponible", 
+                                    "date_creation": datetime.today().strftime('%d/%m/%Y'),
+                                    "utilise_par": ""
+                                }
+                                st.success(f"Ticket {nouveau_code} prêt à être envoyé par SMS/WhatsApp !")
+                                st.rerun()
+                            else:
+                                st.error("Ce code existe déjà.")
+                
+                st.markdown("---")
+                st.markdown("#### 📊 Suivi d'utilisation des tickets en temps réel")
+                # Affichage sous forme de tableau propre
+                data_t = []
+                for k, v in serveur_data["tickets"].items():
+                    data_t.append({"Code Ticket": k, "Statut de Sécurité": v["statut"], "Créé le": v["date_creation"], "Consommé par": v["utilise_par"]})
+                st.dataframe(pd.DataFrame(data_t), use_container_width=True)
+
+            # Sous-onglet 3 : Dépôt direct par l'owner (Approuvé automatiquement)
+            with sub_tabs[2]:
+                st.markdown("#### Téléversement direct (Auto-approuvé)")
+                with st.form("owner_direct_upload"):
+                    u_mat = st.text_input("Nom de la matière :")
+                    u_cyc = st.selectbox("Cycle", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+                    u_fil = st.selectbox("Filière", FILIERES)
+                    u_niv = st.selectbox("Niveau", ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5", "M1", "M2"])
+                    u_type = st.selectbox("Type", ["CC", "Examen", "Rattrapage", "TP"])
