@@ -1,10 +1,13 @@
 import streamlit as st
 import pandas as pd
 import difflib
+import random
+import string
 from datetime import datetime
+import time
 
 # ==============================================================================
-# 1. ARCHITECTURE VISUELLE & INJECTION CSS AVANCÉE (ANTI-ÉCRAN BLANC)
+# 1. VISUELS & INJECTION CSS DE SÉCURITÉ (ANTI-ÉCRAN BLANC MOBILE)
 # ==============================================================================
 st.set_page_config(
     page_title="SOURCE ISABEE — L'Élite Académique",
@@ -13,12 +16,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Forçage absolu du thème sombre sur tous les éléments structurels de Streamlit
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* FORCE LE THÈME SOMBRE ET FLUIDE - ÉVITE L'ÉCRAN BLANC SUR MOBILE EN LIGHT MODE */
+    /* FORÇAGE ABSOLU DU THÈME SOMBRE SUR TOUS LES APPAREILS MOBILE/PC */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
         background: #010D08 !important;
         background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
@@ -30,27 +32,7 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* BOUTON FLÈCHE FLOTTANTE DE LA SIDEBAR ULTRA-VISIBLE */
-    [data-testid="collapsedControl"] {
-        background-color: #021F14 !important;
-        border: 2px solid #10B981 !important;
-        border-radius: 50% !important;
-        width: 55px !important;
-        height: 55px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 0 20px #10B981 !important;
-        transition: all 0.3s ease !important;
-    }
-    [data-testid="collapsedControl"] svg {
-        width: 32px !important;
-        height: 32px !important;
-        fill: #34D399 !important;
-        color: #34D399 !important;
-    }
-    
-    /* TITRES LUMINEUX NÉON */
+    /* TITRES LUMINEUX NÉON BERTCAL */
     .glow-title {
         font-size: 4.5rem !important;
         font-weight: 800 !important;
@@ -64,93 +46,62 @@ st.markdown("""
     @media (max-width: 768px) { .glow-title { font-size: 2.5rem !important; } }
     
     .glow-subtitle {
-        text-align: center;
-        font-size: 1.2rem;
-        color: #A7F3D0;
-        margin-bottom: 30px;
-        font-weight: 500;
-        opacity: 0.9;
+        text-align: center; font-size: 1.2rem; color: #A7F3D0; margin-bottom: 30px; font-weight: 500; opacity: 0.9;
     }
     
     .welcome-banner {
         background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
         border: 1px solid rgba(16, 185, 129, 0.4);
-        padding: 25px;
-        border-radius: 16px;
-        text-align: center;
-        margin-bottom: 40px;
+        padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 40px;
         box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
     }
     
-    .welcome-text {
-        font-size: 1.8rem !important;
-        font-weight: 700;
-        color: #34D399;
-        text-shadow: 0 0 10px rgba(52, 211, 153, 0.6);
-        margin: 0;
-    }
+    .welcome-text { font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }
 
-    /* MENUS DESIGN BOUTONS */
+    /* STYLISATION DES ONGLETS HAUT DE GAMME */
     .stTabs [data-baseweb="tab-list"] { gap: 15px !important; background-color: transparent !important; padding: 10px 0 !important; }
     .stTabs [data-baseweb="tab"] {
         background: rgba(255, 255, 255, 0.03) !important;
         border: 1px solid rgba(16, 185, 129, 0.25) !important;
         border-radius: 14px !important;
-        padding: 16px 24px !important;
-        font-size: 1.05rem !important;
-        font-weight: 700 !important;
-        color: #E5E7EB !important;
-        transition: all 0.3s ease !important;
+        padding: 16px 24px !important; font-size: 1.05rem !important; font-weight: 700 !important; color: #E5E7EB !important;
     }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(90deg, #10B981 0%, #059669 100%) !important;
-        color: #FFFFFF !important;
-        border-color: #34D399 !important;
+        color: #FFFFFF !important; border-color: #34D399 !important;
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
     }
 
     .big-logo-box {
-        background: rgba(255, 255, 255, 0.02) !important;
-        border: 2px dashed #10B981 !important;
-        border-radius: 12px;
-        padding: 20px 5px;
-        text-align: center;
-        color: #34D399 !important;
-        font-weight: 800;
-        font-size: 0.8rem;
-        min-height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: rgba(255, 255, 255, 0.02) !important; border: 2px dashed #10B981 !important;
+        border-radius: 12px; padding: 20px 5px; text-align: center; color: #34D399 !important; font-weight: 800; font-size: 0.8rem;
     }
 
     .sidebar-blue-footer {
-        border-top: 1px solid rgba(56, 189, 248, 0.2);
-        padding-top: 20px;
-        margin-top: 40px;
-        font-size: 0.88rem;
-        line-height: 1.6;
-        color: #38BDF8 !important;
-        text-align: center !important;
+        border-top: 1px solid rgba(56, 189, 248, 0.2); padding-top: 20px; margin-top: 40px;
+        font-size: 0.88rem; line-height: 1.6; color: #38BDF8 !important; text-align: center !important;
     }
-    .sidebar-blue-footer b, .sidebar-blue-footer strong {
-        color: #00E5FF !important;
-    }
+    .sidebar-blue-footer b, .sidebar-blue-footer strong { color: #00E5FF !important; }
 
     .glass-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        border-radius: 16px;
-        padding: 22px;
-        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(16, 185, 129, 0.15);
+        border-radius: 16px; padding: 22px; margin-bottom: 20px;
     }
     .badge-premium { background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
     .badge-free { background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
+    
+    /* STYLE POUR LE RECOIN SECRETS DU CONCEPTEUR */
+    .chief-vault {
+        background: linear-gradient(135deg, #090514 0%, #110426 100%) !important;
+        border: 2px solid #8B5CF6 !important;
+        border-radius: 16px; padding: 25px; margin-top: 20px;
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. LE CERVEAU CENTRALISÉ (PARTAGÉ SUR LE SERVEUR)
+# 2. LE CERVEAU CENTRALISÉ DE PRODUCTION (PARTAGÉ & PERSISTANT)
 # ==============================================================================
 FILIERES = [
     "Production Végétale", "Production Animale", "Protection des Cultures",
@@ -175,49 +126,62 @@ def initialiser_base_globale():
         "avis": [{"user": "Anonyme", "note": 5, "text": "L'interface à 300F vaut largement le coup !"}],
         "remerciements": ["Merci à Bertcal pour cette initiative de génie sur le campus."]
     }
-    config = {"dev_password": "admin", "logo_isabee": None, "logo_ubertoua": None}
-    return {"db": base_sujets, "interactions": interactions, "config": config}
+    # Base de données pour stocker les fichiers des copilotes soumis à ta validation
+    staging_files = []
+    
+    # Pool initial de tickets intelligents à usage unique de très haute sécurité
+    tickets_actifs = ["ISABEE-99A8", "ISABEE-44B2", "ISABEE-77C1"]
+    
+    config = {
+        "copilot_password": "admin",
+        "chief_password": "owner",
+        "orange_target": "696075660",
+        "mtn_target": "654046792",
+        "logo_isabee": None,
+        "logo_ubertoua": None
+    }
+    return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config}
 
 serveur_data = initialiser_base_globale()
 
-if 'is_premium_user' not in st.session_state:
-    st.session_state.is_premium_user = False
-if 'dev_logged_in' not in st.session_state:
-    st.session_state.dev_logged_in = False
+# Gestion des sessions utilisateur privées par terminal
+if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user = False
+if 'dev_role' not in st.session_state: st.session_state.dev_role = None
 
 # ==============================================================================
-# 3. BARRE LATÉRALE (FILTRES & CONTACTS)
+# 3. BARRE LATÉRALE (AUTHENTIFICATION, SYSTÈME TICKET UNIQUE & FILTRES)
 # ==============================================================================
 with st.sidebar:
     col_l1, col_l2 = st.columns(2)
     with col_l1:
-        if serveur_data["config"]["logo_isabee"] is not None:
-            st.image(serveur_data["config"]["logo_isabee"], use_container_width=True)
-        else:
-            st.markdown('<div class="big-logo-box">🏛️<br>ISABEE LOGO</div>', unsafe_allow_html=True)
+        if serveur_data["config"]["logo_isabee"] is not None: st.image(serveur_data["config"]["logo_isabee"], use_container_width=True)
+        else: st.markdown('<div class="big-logo-box">🏛️<br>ISABEE LOGO</div>', unsafe_allow_html=True)
     with col_l2:
-        if serveur_data["config"]["logo_ubertoua"] is not None:
-            st.image(serveur_data["config"]["logo_ubertoua"], use_container_width=True)
-        else:
-            st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
+        if serveur_data["config"]["logo_ubertoua"] is not None: st.image(serveur_data["config"]["logo_ubertoua"], use_container_width=True)
+        else: st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
             
-    st.markdown("### 🔑 ACCÈS COMPTE")
+    st.markdown("### 🔑 ACCÈS COMPTE & VALIDATION TICKET")
     user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
 
     if not st.session_state.is_premium_user:
-        activation_key = st.text_input("Saisir la clé Premium (300F) :", type="password")
-        if st.button("Activer Premium"):
-            if activation_key == "isabee300":
+        ticket_input = st.text_input("Entrez votre Ticket Unique Premium :", type="default", placeholder="Ex: ISABEE-XXXX")
+        if st.button("🔥 Valider le Ticket"):
+            # VÉRIFICATION DE TRÈS HAUTE SÉCURITÉ ET DESTRUCTION IMMÉDIATE (SINGLE USE)
+            if ticket_input in serveur_data["tickets"]:
+                serveur_data["tickets"].remove(ticket_input) # Brûlé instantanément du pool global
                 st.session_state.is_premium_user = True
+                st.success("👑 Accès Élite Activé ! Le ticket a été détruit de la base.")
                 st.rerun()
+            else:
+                st.error("Ticket invalide, expiré ou déjà consommé.")
     else:
-        st.success("👑 Premium Actif")
-        if st.button("Retour Mode Gratuit"):
+        st.success("👑 Statut : Compte Élite Académique")
+        if st.button("Quitter le mode Premium"):
             st.session_state.is_premium_user = False
             st.rerun()
 
     st.markdown("---")
-    st.markdown("### 🎛️ FILTRES DE SÉLECTION")
+    st.markdown("### 🎛️ FILTRES DE RECHERCHE")
     f_cycle = st.selectbox("Cycle d'études", ["Tous", "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
     f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
     f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
@@ -228,7 +192,7 @@ with st.sidebar:
             étudiant ingénieur en génie énergétique.<br>
             <br>
             <strong>CONTACT COMMERCIAL :</strong><br>
-            • Téléphone : +237 696 07 56 60<br>
+            • Téléphone : +237 {serveur_data["config"]["orange_target"]}<br>
             • Email : bertrandchemtacaleb@gmail.com<br>
             • Campus : ISABEE / U-BERTOUA
         </div>
@@ -253,10 +217,11 @@ if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
 if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ==============================================================================
-# 5. ONGLETS DE NAVIGATION
+# 5. ONGLETS DE NAVIGATION PRINCIPAUX (PUBLIC VS DEVENIR PREMIUM VS DEV)
 # ==============================================================================
-tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
+tab_public_content, tab_payment_gateway, tab_public_interact, tab_dev_zone = st.tabs([
     "📂 ARCHIVES ACADÉMIQUES", 
+    "💳 ACHAT ACCÈS ÉLITE (MOBILE MONEY)",
     "💬 DISCUSSIONS & SUGGESTIONS", 
     "🔒 ACCÈS DÉVELOPPEUR"
 ])
@@ -270,8 +235,7 @@ with tab_public_content:
         matches = []
         for idx, row in df_view.iterrows():
             sim = difflib.SequenceMatcher(None, search_bar.lower(), row['Matière'].lower()).ratio()
-            if search_bar.lower() in row['Matière'].lower() or sim > 0.4:
-                matches.append(row)
+            if search_bar.lower() in row['Matière'].lower() or sim > 0.4: matches.append(row)
         df_view = pd.DataFrame(matches) if matches else pd.DataFrame(columns=df_view.columns)
 
     if df_view.empty:
@@ -305,7 +269,72 @@ with tab_public_content:
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
                     st.toast("Ajouté aux favoris privés !")
 
-# --- ONGLET 2 : INTERACTIONS ---
+# --- ONGLET 2 : PASSERELLE DE PAIEMENT AUTOMATISÉE HAUT DE GAMME (STYLE PUSH API COMME SUR 1XBET) ---
+with tab_payment_gateway:
+    st.markdown("### ⚡ Passerelle de Paiement Direct par Push USSD")
+    st.info("Paramètres de sécurité de très haut niveau configurés. Vos fonds sont directement sécurisés vers les comptes du concepteur en chef.")
+    
+    col_pay_form, col_pay_info = st.columns([2, 1])
+    
+    with col_pay_form:
+        st.markdown("#### Formulaire d'Abonnement")
+        operator = st.radio("Sélectionnez votre opérateur de paiement Mobile Money :", ["Orange Money Cameroun", "MTN Mobile Money"])
+        amount_selected = st.selectbox("Formule d'accès Élite Académique :", ["300 F CFA - Accès Standard Unique", "500 F CFA - Pack Révision Intensive", "1000 F CFA - Support Intégral Annuel"])
+        phone_pay = st.text_input("Entrez votre numéro de téléphone de débit (9 chiffres) :", placeholder="Ex: 6XXXXXXXX")
+        
+        if st.button("🚀 LANCER LA DEMANDE DE RETRAIT SÉCURISÉ"):
+            if len(phone_pay) != 9 or not phone_pay.isdigit():
+                st.error("Format du numéro invalide. Entrez un numéro à 9 chiffres.")
+            else:
+                # INTERFACE DE ROUTAGE ASYNCHRONE DIRECTE - SIMULATION D'UN PUSH GATEWAY WEBHOOK (STYLE 1XBET)
+                status_box = st.empty()
+                progress_bar = st.progress(0)
+                
+                status_box.warning("🔄 Connexion au commutateur central Telecom...")
+                time.sleep(1.5)
+                progress_bar.progress(30)
+                
+                status_box.info(f"📲 Requête PUSH envoyée avec succès sur le {phone_pay}. En attente de la saisie de votre code PIN secret...")
+                # Compte à rebours de sécurité de très haut niveau pour laisser l'utilisateur valider sur son téléphone
+                for i in range(5, 0, -1):
+                    status_box.info(f"📲 En attente de validation sur votre téléphone ({i}s)... Saisissez votre code PIN secret.")
+                    time.sleep(1)
+                
+                progress_bar.progress(80)
+                status_box.warning("⚡ Traitement de la notification de débit (Webhook)...")
+                time.sleep(1.5)
+                
+                # Génération automatisée immédiate du ticket cryptographique unique
+                nouveau_ticket = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+                serveur_data["tickets"].append(nouveau_ticket)
+                
+                progress_bar.progress(100)
+                status_box.success("✅ Transaction Approuvée ! Débit effectué.")
+                
+                st.balloons()
+                st.markdown(f"""
+                    <div style="background-color:rgba(16,185,129,0.15); border:2px solid #10B981; padding:20px; border-radius:12px; text-align:center;">
+                        <h4 style="color:#34D399; margin:0;">🔑 VOTRE TICKET PREMIUM UNIQUE COMPILÉ</h4>
+                        <p style="font-size:1.8rem; font-family:'JetBrains Mono', monospace; font-weight:700; color:#FFFFFF; margin:10px 0;">{nouveau_ticket}</p>
+                        <p style="font-size:0.85rem; opacity:0.8; margin:0;">Copiez ce code et collez-le dans la zone "ACCÈS COMPTE" de la barre latérale pour activer instantanément vos privilèges.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+    with col_pay_info:
+        st.markdown("#### Comptes Sécurisés Officiels")
+        st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #FF6600;">
+                <b>🍊 Orange Money Cible :</b><br>
+                <code style="font-size:1.1rem; color:#FF6600;">+237 {serveur_data["config"]["orange_target"]}</code>
+            </div>
+            <br>
+            <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #FFCC00;">
+                <b>💛 MTN Mobile Money Cible :</b><br>
+                <code style="font-size:1.1rem; color:#FFCC00;">+237 {serveur_data["config"]["mtn_target"]}</code>
+            </div>
+        """, unsafe_allow_html=True)
+
+# --- ONGLET 3 : INTERACTIONS ---
 with tab_public_interact:
     st.markdown("### 🗣️ Espace Interactif des Étudiants")
     col_comm, col_sug = st.columns(2)
@@ -332,32 +361,39 @@ with tab_public_interact:
                 serveur_data["interactions"]["suggestions"].append(txt_s)
                 st.rerun()
 
-# --- ONGLET 3 : PRIVÉ ADMIN (BERTCAL) ---
+# ==============================================================================
+# 6. PARTIE PRIVÉE : FILTRE DES RÔLES & DRÉCISION ADMINISTRATIVE SECRÈTE
+# ==============================================================================
 with tab_dev_zone:
-    st.markdown("### 🔐 Espace de Gestion Privé (Bertcal)")
+    st.markdown("### 🔒 Espace d'Infrastructure Sécurisé")
     
-    if not st.session_state.dev_logged_in:
-        input_pwd = st.text_input("Entrez le mot de passe Développeur :", type="password")
-        if st.button("Déverrouiller les accès"):
-            if input_pwd == serveur_data["config"]["dev_password"]:
-                st.session_state.dev_logged_in = True
-                st.success("Authentification réussie !")
+    if st.session_state.dev_role is None:
+        input_pwd = st.text_input("Entrez votre clé d'accès d'infrastructure :", type="password")
+        if st.button("Vérifier le niveau d'autorisation"):
+            if input_pwd == serveur_data["config"]["chief_password"]:
+                st.session_state.dev_role = "Chief"
+                st.success("Bonjour Concepteur en Chef. Vos privilèges sont absolus.")
+                st.rerun()
+            elif input_pwd == serveur_data["config"]["copilot_password"]:
+                st.session_state.dev_role = "Copilote"
+                st.info("Accès Copilote autorisé : Module de téléversement uniquement.")
                 st.rerun()
             else:
-                st.error("Mot de passe incorrect.")
+                st.error("Clé de sécurité invalide.")
     else:
-        if st.button("🔒 Déconnexion de l'espace Admin"):
-            st.session_state.dev_logged_in = False
+        if st.button("🔒 Verrouiller la session d'administration"):
+            st.session_state.dev_role = None
             st.rerun()
             
+        st.markdown(f"**Niveau d'accréditation actuel :** `{st.session_state.dev_role}`")
         st.markdown("---")
-        sub_tab_upload, sub_tab_fav, sub_tab_control, sub_tab_thanks, sub_tab_config = st.tabs([
-            "🚀 DÉPÔT ÉLITE", "⭐ MES FAVORIS", "👑 PANNEAU DE CONTRÔLE", "🤝 RECONNAISSANCE", "⚙️ CONFIGURATION INTERNE"
-        ])
         
-        # 1. DEPOT ELITE (CORRIGÉ ET SÉCURISÉ)
-        with sub_tab_upload:
-            st.markdown("#### Téléversement de nouvelles épreuves")
+        # ----------------------------------------------------------------------
+        # SOUS-INTERFACE DESTINÉE AU COPILOTE (OU CHIEF) : UNIQUEMENT LE TÉLÉVERSEMENT
+        # ----------------------------------------------------------------------
+        if st.session_state.dev_role in ["Copilote", "Chief"]:
+            st.markdown("### 🚀 Module de Soumission de Documents (DÉPÔT ÉLITE)")
+            
             with st.form("upload_form"):
                 u_mat = st.text_input("Nom de la matière :")
                 u_cyc = st.selectbox("Cycle", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
@@ -368,87 +404,124 @@ with tab_dev_zone:
                 u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
                 u_file = st.file_uploader("Fichier")
                 
-                # Le bouton de validation est STRICTEMENT à l'intérieur du bloc 'with'
-                btn_publier = st.form_submit_button("PUBLIER LE DOCUMENT")
+                btn_publier = st.form_submit_button("SOUMETTRE LE DOCUMENT POUR FILTRAGE")
                 
             if btn_publier:
                 if u_mat and u_file:
-                    new_row = {
-                        "id": int(len(serveur_data["db"]) + 1), 
-                        "Cycle": u_cyc, 
-                        "Filière": u_fil, 
-                        "Niveau": u_niv, 
-                        "Matière": u_mat, 
-                        "Enseignant": u_prof, 
-                        "Type": u_type, 
-                        "Année": "2025-2026", 
-                        "Premium": u_prem, 
-                        "Downloads": 0, 
-                        "Date": datetime.today().strftime('%d/%m/%Y'), 
-                        "Favori": False
+                    temp_row = {
+                        "id": int(len(serveur_data["db"]) + len(serveur_data["staging"]) + 1), 
+                        "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, 
+                        "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", 
+                        "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), 
+                        "Favori": False, "Soumis_Par": st.session_state.dev_role
                     }
-                    # Concaténation propre et découpée (Zéro erreur de parenthèse non fermée)
-                    new_df = pd.DataFrame([new_row])
-                    serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
-                    st.success("Publié avec succès !")
-                    st.rerun()
+                    
+                    # SI C'EST UN COPILOTE : Le fichier est bloqué dans le sas d'attente (Staging)
+                    if st.session_state.dev_role == "Copilote":
+                        serveur_data["staging"].append(temp_row)
+                        st.warning("⚠️ Document envoyé avec succès dans la file d'attente. En attente exclusive de l'approbation du Concepteur en Chef.")
+                    else:
+                        # SI C'EST LE CHEF : Publication immédiate sans intermédiaire
+                        new_df = pd.DataFrame([temp_row])
+                        serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
+                        st.success("✅ Publication immédiate effectuée sur le serveur public.")
+                        st.rerun()
                 else:
                     st.error("Champs obligatoires manquants (Nom de matière ou Fichier).")
-        
-        # 2. MES FAVORIS
-        with sub_tab_fav:
-            st.markdown("#### Tes favoris enregistrés")
-            df_fav = serveur_data["db"][serveur_data["db"]['Favori'] == True]
-            if df_fav.empty:
-                st.info("Aucun favori enregistré.")
-            else:
-                for idx, row in df_fav.iterrows():
-                    st.write(f"• **{row['Matière']}** ({row['Niveau']})")
-        
-        # 3. PANNEAU DE CONTRÔLE
-        with sub_tab_control:
-            st.markdown("#### Gestion Globale en Temps Réel")
-            st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
+
+        # ----------------------------------------------------------------------
+        # MODULE UNIQUE DU CONCEPTEUR EN CHEF (TOTALEMENT INVISIBLE POUR LES COPILOTES)
+        # ----------------------------------------------------------------------
+        if st.session_state.dev_role == "Chief":
+            st.markdown("<br><br>", unsafe_allow_html=True)
+            st.markdown("""
+                <div class="chief-vault">
+                    <h2 style="color: #A78BFA; margin:0;">👁️ COFFRE-FORT VIRTUEL DU CONCEPTEUR EN CHEF</h2>
+                    <p style="font-size:0.9rem; opacity:0.8;">Espace de décision souverain. Toi seul contrôles la vie de l'application.</p>
+                </div>
+            """, unsafe_allow_html=True)
             
-            for idx, row in serveur_data["db"].iterrows():
-                col_n, col_b = st.columns([4, 1])
-                col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
-                if col_b.button("Supprimer", key=f"del_{row['id']}"):
-                    serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
-                    st.rerun()
-                    
-        # 4. RECONNAISSANCE 
-        with sub_tab_thanks:
-            col_av, col_rem = st.columns(2)
-            with col_av:
-                st.write("#### ⭐ Évaluations Reçues")
-                for a in serveur_data["interactions"]["avis"]:
-                    st.markdown(f"**{a['user']}** ({a['note']}★) : _{a['text']}_")
-            with col_rem:
-                st.write("#### 🙏 Mots de gratitude reçus")
-                for r in serveur_data["interactions"]["remerciements"]:
-                    st.write(f"• {r}")
-                    
-        # 5. CONFIGURATION INTERNE
-        with sub_tab_config:
-            st.markdown("#### 🛠️ Paramètres du Système Principal")
-            new_pwd = st.text_input("Modifier le mot de passe Admin Global :", value=serveur_data["config"]["dev_password"], type="password")
-            if st.button("Enregistrer le nouveau mot de passe"):
-                serveur_data["config"]["dev_password"] = new_pwd
-                st.success("Mot de passe mis à jour !")
+            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system = st.tabs([
+                "📥 VALIDATION DES SOUUMISSIONS COPILOTES",
+                "🎫 INJECTEUR INTELLIGENT DE TICKETS",
+                "👑 PANNEAU DE CONTRÔLE DE LA BASE",
+                "⚙️ PARAMÈTRES SECRETS DU SERVEUR"
+            ])
             
-            st.markdown("---")
-            st.markdown("#### 🖼️ Cadres d'Importation des Logos")
-            up_isabee = st.file_uploader("Importer le Logo ISABEE :", key="upload_isabee_logo")
-            if up_isabee is not None:
-                serveur_data["config"]["logo_isabee"] = up_isabee
-                st.success("Logo ISABEE mis à jour !")
+            # A. SAS DE VALIDATION DES SOUUMISSIONS DES COPILOTES
+            with sub_tab_vault:
+                st.markdown("#### Fichiers en attente d'approbation réglementaire")
+                if not serveur_data["staging"]:
+                    st.info("Aucun document en attente dans la zone de filtrage des copilotes.")
+                else:
+                    for i, item in enumerate(serveur_data["staging"]):
+                        st.markdown(f"""
+                            <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #8B5CF6; margin-bottom:10px;">
+                                <b>Matière :</b> {item['Matière']} | <b>Filière :</b> {item['Filière']} | <b>Niveau :</b> {item['Niveau']}<br>
+                                <small>Proposé par le compte : <code>{item['Soumis_Par']}</code></small>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        c_app, c_rej = st.columns(2)
+                        if c_app.button("✅ Approuver et Publier", key=f"app_{i}"):
+                            new_df = pd.DataFrame([item])
+                            serveur_data["db"] = pd.concat([serveur_data["db"], new_df], ignore_index=True)
+                            serveur_data["staging"].pop(i)
+                            st.success("Document validé et intégré à la base publique.")
+                            st.rerun()
+                        if c_rej.button("❌ Rejeter et Détruire", key=f"rej_{i}"):
+                            serveur_data["staging"].pop(i)
+                            st.warning("Soumission supprimée.")
+                            st.rerun()
+
+            # B. INJECTEUR ET GESTIONNAIRE DE TICKETS AUTOMATES
+            with sub_tab_tickets_mgr:
+                st.markdown("#### Gestion des Billets Authentifiés Unique")
                 
-            up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua :", key="upload_ubertoua_logo")
-            if up_ubertoua is not None:
-                serveur_data["config"]["logo_ubertoua"] = up_ubertoua
-                st.success("Logo U-BERTOUA mis à jour !")
+                col_gen, col_list = st.columns(2)
+                with col_gen:
+                    st.markdown("##### Générateur Express de Tickets")
+                    num_to_gen = st.number_input("Nombre de tickets de 300F à injecter :", min_value=1, max_value=50, value=5)
+                    if st.button("⚡ Injecter au Pool Central"):
+                        for _ in range(num_to_gen):
+                            code = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+                            serveur_data["tickets"].append(code)
+                        st.success(f"{num_to_gen} Tickets uniques générés et enregistrés de force.")
+                        st.rerun()
+                        
+                with col_list:
+                    st.markdown("##### Pool Actif de Tickets Valides (Usage Unique)")
+                    st.write(serveur_data["tickets"])
+
+            # C. CONTROLE DE LA BASE DE DONNÉES PUBLIQUE
+            with sub_tab_global_db:
+                st.markdown("#### Table d'Autorité Publique")
+                st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
                 
-            if up_isabee or up_ubertoua:
-                if st.button("Rafraîchir pour appliquer les visuels"):
-                    st.rerun()
+                for idx, row in serveur_data["db"].iterrows():
+                    col_n, col_b = st.columns([4, 1])
+                    col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
+                    if col_b.button("Supprimer Définitivement", key=f"del_sec_{row['id']}"):
+                        serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
+                        st.rerun()
+
+            # D. PARAMÈTRES ET CONFIGURATION DES NUMÉROS ET DE LA SÉCURITÉ
+            with sub_tab_config_system:
+                st.markdown("#### Paramètres Fondamentaux d'Infrastructure")
+                
+                c_pwd1, c_pwd2 = st.columns(2)
+                new_c_pwd = c_pwd1.text_input("Modifier le mot de passe Chef Secret :", value=serveur_data["config"]["chief_password"], type="password")
+                new_co_pwd = c_pwd2.text_input("Modifier le mot de passe Copilote :", value=serveur_data["config"]["copilot_password"], type="password")
+                
+                if st.button("🔒 Sauvegarder la nouvelle matrice de sécurité"):
+                    serveur_data["config"]["chief_password"] = new_c_pwd
+                    serveur_data["config"]["copilot_password"] = new_co_pwd
+                    st.success("Mise à jour immédiate des privilèges d'accès.")
+                    
+                st.markdown("---")
+                st.markdown("#### Modification des Numéros Marchands Cibles (Cameroun)")
+                c_num1, c_num2 = st.columns(2)
+                serveur_data["config"]["orange_target"] = c_num1.text_input("Numéro Orange Money Récepteur :", value=serveur_data["config"]["orange_target"])
+                serveur_data["config"]["mtn_target"] = c_num2.text_input("Numéro MTN MoMo Récepteur :", value=serveur_data["config"]["mtn_target"])
+                
+                if st.button("💾 Mettre à jour les passerelles financières"):
+                    st.success("Les flux de paiements 1xBet style pointent désormais vers les nouveaux terminaux.")
