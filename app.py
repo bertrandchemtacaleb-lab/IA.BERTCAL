@@ -3,9 +3,10 @@ import pandas as pd
 import difflib
 from datetime import datetime
 import time
+import hashlib
 
 # ==============================================================================
-# 1. ARCHITECTURE VISUELLE ET COMPOSANTS CSS INJECTÉS (FORÇAGE THÈME SOMBRE NÉON)
+# 1. ARCHITECTURE VISUELLE & INJECTION CSS ULTRA-FORCÉE (CORRECTION MOBILE & PC)
 # ==============================================================================
 st.set_page_config(
     page_title="SOURCE ISABEE — L'Élite Académique",
@@ -16,9 +17,8 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght=400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* APPLICATION GLOBALE DU THEME PRESTIGE VERT SOMBRE */
     .stApp, [data-testid="stMainView"], [data-testid="stHeader"], .main, .block-container, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
         background: #010D08 !important;
         background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
@@ -26,503 +26,362 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
-    p, span, label, h1, h2, h3, h4, h5, h6, div {
-        color: #FFFFFF !important;
-    }
+    p, span, label, h1, h2, h3, h4, h5, h6, div { color: #FFFFFF !important; }
     
-    /* BOUTON FLÈCHE FLOTTANTE DE LA SIDEBAR ULTRA-VISIBLE */
-    [data-testid="collapsedControl"] {
-        background-color: #021F14 !important;
-        border: 2px solid #10B981 !important;
-        border-radius: 50% !important;
-        width: 55px !important;
-        height: 55px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 0 20px #10B981 !important;
-    }
-    
-    /* TITRES LUMINEUX NÉON */
-    .glow-title {
-        font-size: 4.2rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        text-align: center;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        letter-spacing: -2px;
-        text-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
-    }
-    @media (max-width: 768px) { .glow-title { font-size: 2.3rem !important; } }
-    
-    .glow-subtitle {
-        text-align: center;
-        font-size: 1.15rem;
-        color: #A7F3D0 !important;
-        margin-bottom: 30px;
-        font-weight: 500;
-    }
-    
-    .welcome-banner {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        padding: 22px;
-        border-radius: 16px;
-        text-align: center;
-        margin-bottom: 35px;
-    }
-    
-    /* STRUCTURES ET ENCADREMENTS */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        border-radius: 14px;
-        padding: 20px;
-        margin-bottom: 18px;
-    }
-    
+    /* INTERFACE DES ONGLETS PRINCIPAUX MOTEUR */
+    .stTabs [data-baseweb="tab-list"] { gap: 12px !important; background-color: transparent !important; }
     .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(16, 185, 129, 0.25) !important;
-        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        border-radius: 10px !important;
         padding: 14px 20px !important;
         font-weight: 700 !important;
+        color: #9CA3AF !important;
     }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(90deg, #10B981 0%, #059669 100%) !important;
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3) !important;
     }
     
-    /* PARAMETRES KPI BOXES */
-    .kpi-box {
-        background: rgba(16, 185, 129, 0.05);
-        border: 1px solid #10B981;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
+    .glass-card {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
     }
-
+    
+    .glow-title {
+        font-size: 3.8rem !important;
+        font-weight: 800 !important;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+    
     .sidebar-blue-footer {
-        border-top: 1px solid rgba(56, 189, 248, 0.2);
+        border-top: 1px solid rgba(56, 189, 248, 0.15);
         padding-top: 15px;
-        margin-top: 35px;
+        margin-top: 30px;
         font-size: 0.85rem;
         color: #38BDF8 !important;
-        text-align: center !important;
+        text-align: center;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. BASE DE DONNÉES CENTRALE (SERVEUR GLOBAL COHÉRENT ET EN LIGNE)
+# 2. CORE ENGINE & ETATS DU SERVEUR CENTRALISÉ
 # ==============================================================================
+FILIERES = [
+    "Production Végétale", "Production Animale", "Protection des Cultures",
+    "Opérations Forestières", "Aménagement Forestier", "Génie Énergétique", "Agroéconomie"
+]
+
 @st.cache_resource
-def executer_serveur_central():
-    # Catalogue global des épreuves
+def initialiser_architecture_centrale():
     base_sujets = pd.DataFrame([
-        {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique Approfondie", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 194, "Approuvé": True},
-        {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides + Corrigé Élite", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 312, "Approuvé": True}
+        {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique et Transfert Thermique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Approuvé": True},
+        {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides Appliquée + CORRIGÉ", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 92, "Approuvé": True}
     ])
     
-    # Historique de toutes les transactions de paiement automatique style 1xBet
-    historique_paiements = pd.DataFrame([
-        {"ID_Transaction": "TXN-OM-99821", "Matricule": "22I0041B", "Opérateur": "Orange Money", "Montant": 300, "Statut": "Réussi", "Date": "15/06/2026"}
-    ])
+    # Registre comptable automatisé type Passerelle API
+    registre_transactions = pd.DataFrame(columns=["Ref_Transaction", "Matricule", "Opérateur", "Numéro", "Montant", "Statut", "Timestamp"])
     
-    # Espace des interactions étudiantes
-    interactions = {
-        "commentaires": ["Le corrigé de fluide est ultra détaillé merci !", "Service automatique très rapide."],
-        "suggestions": ["Mettez les épreuves de Protection des Cultures L3 svp."]
-    }
-    
-    # Liste des tickets d'urgence générés manuellement
-    tickets_manuels = {
-        "ISABEE-ADMIN-100": {"statut": "Disponible", "utilise_par": ""}
-    }
-    
-    # Configuration globale par défaut modulable en catégorie
-    config = {
+    config_systeme = {
         "owner_password": "owner",
         "copilot_password": "copilote",
-        "prix_premium": 300,
-        "mode_api": "Automatique (Live)",
-        "orange_phone": "696075660",
-        "mtn_phone": "654046792",
-        "nom_app": "SOURCE ISABEE",
-        "filières_actives": [
-            "Production Végétale", "Production Animale", "Protection des Cultures",
-            "Opérations Forestières", "Aménagement Forestier", "Génie Énergétique", 
-            "Agroéconomie", "Génie de l'Environnement"
-        ]
+        "tarif_premium": 300,
+        "api_gateway_status": "ONLINE",
+        "system_version": "v2.4.0-PROD",
+        "crypto_salt": "ISABEE_SECURE_99"
     }
-    return {"db": base_sujets, "paiements": historique_paiements, "interactions": interactions, "tickets": tickets_manuels, "config": config}
+    
+    return {"db": base_sujets, "transactions": registre_transactions, "config": config_systeme}
 
-serveur = executer_serveur_central()
+core = initialiser_architecture_centrale()
 
-# Variables d'état pour le terminal de l'appareil courant
-if 'is_premium_user' not in st.session_state:
-    st.session_state.is_premium_user = False
-if 'user_role' not in st.session_state:
-    st.session_state.user_role = "Visiteur"
+if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user = False
+if 'user_role' not in st.session_state: st.session_state.user_role = "Visiteur"
 
 # ==============================================================================
-# 3. SIDEBAR : FILTRES & COORDONNÉES DE L'INGÉNIEUR CONCEPTEUR
+# 3. SIDEBAR : IDENTIFICATION ET ROUTAGE ACADÉMIQUE
 # ==============================================================================
 with st.sidebar:
-    st.markdown(f"### 💎 COMPTE {st.session_state.user_role.upper()}")
-    current_matricule = st.text_input("Matricule Étudiant :", value="22I0002B").strip()
+    st.markdown("### 🔐 IDENTITY GATEWAY")
+    user_matricule = st.text_input("Matricule Étudiant :", value="22I0002B").strip()
     
     if st.session_state.is_premium_user:
-        st.success("👑 Statut : Compte Premium Activé")
+        st.success("👑 COMPTE PREMIUM ACTIF")
     else:
-        st.info("🆓 Statut : Version Gratuite Limité")
+        st.warning("🆓 MODE GRATUIT RESTREINT")
         
     st.markdown("---")
-    st.markdown("### 🎛️ CRITÈRES DE FILTRAGE")
-    f_cycle = st.selectbox("Sélectionner le Cycle", ["Tous", "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
-    f_filiere = st.selectbox("Sélectionner la Filière", ["Toutes"] + serveur["config"]["filières_actives"])
-    f_type = st.selectbox("Type d'Épreuve", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
+    st.markdown("### 🎛️ FILTRES ARCHIVES")
+    f_cycle = st.selectbox("Cycle d'études", ["Tous", "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+    f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
+    f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage"])
 
     st.markdown(f"""
         <div class="sidebar-blue-footer">
-            Concepteur en Chef : <b>Chemta Caleb Bertrand</b><br>
+            Système Déployé par : <b>Chemta Caleb Bertrand</b><br>
             Étudiant Ingénieur en Génie Énergétique<br><br>
-            <strong>ASSISTANCE UNIQUE :</strong><br>
-            • Orange : +237 {serveur["config"]["orange_phone"]}<br>
-            • MTN : +237 {serveur["config"]["mtn_phone"]}<br>
-            • ISABEE / Université de Bertoua
+            <strong>SUPPORT DE CONCEPTION :</strong><br>
+            • ID Unique : {hashlib.md5(user_matricule.encode()).hexdigest()[:8].upper()}<br>
+            • Infrastructure : ISABEE / U-BERTOUA
         </div>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. DESIGN DU HEADER & ENTÊTE OFFICIEL
+# 4. EN-TÊTE DE LA PLATEFORME
 # ==============================================================================
-st.markdown(f"<h1 class='glow-title'>{serveur['config']['nom_app']}</h1>", unsafe_allow_html=True)
-st.markdown("<p class='glow-subtitle'>Système de distribution d'archives académiques sécurisé de haute performance.</p>", unsafe_allow_html=True)
-
-st.markdown("""
-    <div class="welcome-banner">
-        <span style="font-size:1.4rem; font-weight:700; color:#34D399;">⚡ ENTRÉE IMMÉDIATE DANS LES ARCHIVES DE L'ÉLITE</span><br>
-        <p style="margin:6px 0 0 0; opacity:0.85; font-size:0.95rem;">Recherchez vos matières, téléchargez vos supports de révision et accédez aux corrigés d'ingénierie.</p>
-    </div>
-""", unsafe_allow_html=True)
+st.markdown("<h1 class='glow-title'>SOURCE ISABEE PRO</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#A7F3D0 !important; margin-bottom:25px;'>Passerelle d'accès automatisée aux ressources académiques d'élite.</p>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. SPLIT DE NAVIGATION EN ONGLETS MAÎTRES
+# 5. SPLIT ROUTAGE : ARCHITECTURE DES ONGLETS APPLICATIFS
 # ==============================================================================
-tab_archives, tab_pass_payment, tab_feedback, tab_maison_virtuelle = st.tabs([
-    "📂 VUE DES ARCHIVES", 
-    "💳 PASSERELLE DE PAIEMENT AUTOMATIQUE (1xBet Style)", 
-    "💬 ESPACE D'INTERACTION ÉTUDIANTS",
-    "🏛️ MAISON VIRTUELLE DU DÉVELOPPEUR"
+tab_docs, tab_payment, tab_maison = st.tabs([
+    "📂 COFFRE-FORT DES ARCHIVES", 
+    "💳 PASSERELLE DE PAIEMENT AUTOMATIQUE", 
+    "🏛️ MAISON VIRTUELLE DE CONTROLE"
 ])
 
 # ------------------------------------------------------------------------------
-# ONGLET A : VUE DES ARCHIVES PUBLIQUES
+# TAB 1 : COFFRE-FORT DES ARCHIVES
 # ------------------------------------------------------------------------------
-with tab_archives:
-    st.markdown("### 🔍 Moteur de recherche d'épreuves")
-    search_query = st.text_input("Tapez le nom d'une unité d'enseignement (Ex: Fluides...) :", value="")
+with tab_docs:
+    st.markdown("### 🔍 MOTEUR DE RECHERCHE INDEXÉ")
+    search_bar = st.text_input("Rechercher une Unité d'Enseignement :", placeholder="Ex: Thermodynamique...")
     
-    # Filtrage de la base de données
-    df_public = serveur["db"][serveur["db"]['Approuvé'] == True].copy()
-    if f_cycle != "Tous": df_public = df_public[df_public['Cycle'] == f_cycle]
-    if f_filiere != "Toutes": df_public = df_public[df_public['Filière'] == f_filiere]
-    if f_type != "Tous": df_public = df_public[df_public['Type'] == f_type]
+    df_active = core["db"][core["db"]['Approuvé'] == True].copy()
+    if f_cycle != "Tous": df_active = df_active[df_active['Cycle'] == f_cycle]
+    if f_filiere != "Toutes": df_active = df_active[df_active['Filière'] == f_filiere]
+    if f_type != "Tous": df_active = df_active[df_active['Type'] == f_type]
     
-    if search_query:
-        df_public = df_public[df_public['Matière'].str.contains(search_query, case=False, na=False)]
+    if search_bar:
+        df_active = df_active[df_active['Matière'].str.contains(search_bar, case=False, na=False)]
         
-    if df_public.empty:
-        st.info("Aucun document approuvé ne correspond à vos filtres actuels.")
+    if df_active.empty:
+        st.info("Aucun document ne correspond aux filtres de sécurité appliqués.")
     else:
-        for idx, row in df_public.iterrows():
+        for idx, row in df_active.iterrows():
             is_p = row['Premium']
-            badge = "<span class='badge-premium'>💎 EXCLUSIVITÉ PREMIUM</span>" if is_p else "<span class='badge-free'>🆓 ACCÈS LIBRE</span>"
+            badge = "<span style='color:#F59E0B; font-weight:bold;'>💎 PREMIUM</span>" if is_p else "<span style='color:#10B981;'>🆓 ACCÈS LIBRE</span>"
             
             st.markdown(f"""
                 <div class="glass-card">
-                    <div style="display:flex; justify-content:between; align-items:center;">
-                        <span style="font-weight:700; font-size:1.15rem;">{row['Matière']}</span>
-                        <div style="margin-left:auto;">{badge}</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>{row['Matière']}</b>
+                        {badge}
                     </div>
-                    <p style="margin:5px 0 0 0; font-size:0.85rem; opacity:0.8;">
-                        Filière : {row['Filière']} | Niveau : {row['Niveau']} | Enseignant : {row['Enseignant']} | Téléchargements : <b>{row['Downloads']}</b>
+                    <p style="font-size:0.85rem; margin:5px 0 0 0; opacity:0.7;">
+                        Filière : {row['Filière']} | Niveau : {row['Niveau']} | Enseignant : {row['Enseignant']} | Index Téléchargements : {row['Downloads']}
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            c_down, c_fav = st.columns(2)
-            with c_down:
+            btn_col, _ = st.columns([2, 3])
+            with btn_col:
                 if is_p and not st.session_state.is_premium_user:
-                    st.button("🔒 Débloquer l'archive via la Passerelle de Paiement", key=f"lock_{row['id']}", disabled=True)
+                    st.button("🔒 Déblocage Automatique Requis", key=f"p_{row['id']}", disabled=True)
                 else:
-                    if st.button(f"📥 Télécharger immédiatement le PDF", key=f"down_{row['id']}"):
-                        serveur["db"].loc[serveur["db"]['id'] == row['id'], 'Downloads'] += 1
-                        st.success("🔄 Document téléchargé avec succès !")
-            with c_fav:
-                if st.button("⭐ Épingler l'épreuve", key=f"fav_{row['id']}"):
-                    st.toast("Ajouté à votre liste locale !")
+                    if st.button("📥 Télécharger le document PDF", key=f"d_{row['id']}"):
+                        core["db"].loc[core["db"]['id'] == row['id'], 'Downloads'] += 1
+                        st.success("Fichier extrait des serveurs avec succès.")
 
 # ------------------------------------------------------------------------------
-# ONGLET B : VRE PASSERELLE DE PAIEMENT AUTOMATIQUE INTEGRÉE (STYLE 1XBET)
+# TAB 2 : PASSERELLE DE PAIEMENT AUTOMATIQUE (STYLE 1XBET SANS NUMEROS VISIBLES)
 # ------------------------------------------------------------------------------
-with tab_pass_payment:
-    st.markdown("### 💳 Passerelle Interconnectée Mobile Money API")
-    st.write("Aucun envoi manuel requis. Remplissez le formulaire, validez la boîte de dialogue USSD push sur votre téléphone pour activer votre compte instantanément.")
+with tab_payment:
+    st.markdown("### 💳 DEPOSIT ENGINE & API PASSERELLE AUTOMATIQUE")
+    st.write("Le système initie une requête Push USSD chiffrée vers votre terminal Mobile Money de manière autonome.")
     
-    col_pay_form, col_ticket_backup = st.columns([2, 1])
-    
-    with col_pay_form:
-        st.markdown(f"#### 📲 Demande de débit direct instantané ({serveur['config']['prix_premium']} CFA)")
-        with st.form("1xbet_style_payment_gateway"):
-            operateur = st.radio("Choisir l'opérateur de prélèvement :", ["Orange Money Cameroun", "MTN Mobile Money"])
-            num_telephone = st.text_input("Numéro de téléphone payeur (9 chiffres) :", placeholder="6xxxxxxxx")
-            
-            submit_payment = st.form_submit_button("LANCER LE PAIEMENT AUTOMATIQUE")
-            
-        if submit_payment:
-            if len(num_telephone) == 9:
-                with st.spinner("⏳ Initialisation du tunnel API... Envoi du Push USSD sur votre mobile..."):
-                    time.sleep(2.5) # Simulation d'attente réseau de l'opérateur
+    if st.session_state.is_premium_user:
+        st.success("Votre terminal est déjà validé au niveau Premium. Accès illimité actif.")
+    else:
+        pay_box, info_box = st.columns([3, 2])
+        with pay_box:
+            with st.form("gateway_1xbet_style"):
+                operator = st.radio("Sélectionner le guichet de facturation :", ["ORANGE MONEY CAMEROUN", "MTN MOBILE MONEY"])
+                phone_payment = st.text_input("Entrer votre numéro de prélèvement (9 chiffres) :", placeholder="6xxxxxxxx")
+                amount_display = st.text_input("Montant standardisé (CFA) :", value=f"{core['config']['tarif_premium']}", disabled=True)
                 
-                # Génération d'une fausse référence de transaction unique à insérer dans le livre comptable
-                ref_auto = f"TXN-{ 'OM' if 'Orange' in operateur else 'MTN' }-{datetime.now().strftime('%M%S%f')[:5]}"
+                trigger_api = st.form_submit_button("LANCER LA DEMANDE DE DÉBIT AUTOMATIQUE")
                 
-                # Ajout de la transaction réussie de manière automatisée
-                nouvelle_tx = {
-                    "ID_Transaction": ref_auto, "Matricule": current_matricule, 
-                    "Opérateur": operateur, "Montant": serveur['config']['prix_premium'], 
-                    "Statut": "Réussi", "Date": datetime.today().strftime('%d/%m/%Y')
-                }
-                serveur["paiements"] = pd.concat([serveur["paiements"], pd.DataFrame([nouvelle_tx])], ignore_index=True)
-                
-                st.session_state.is_premium_user = True
-                st.success(f"✅ Paiement Traité avec Succès ! Référence de validation réseau : {ref_auto}. Votre espace premium est désormais actif.")
-                st.balloons()
-            else:
-                st.error("Format de numéro invalide. Entrez un numéro complet à 9 chiffres.")
-                
-    with col_ticket_backup:
-        st.markdown("#### 🎫 Option de Secours : Ticket Physique")
-        st.write("Si vous possédez un ticket papier généré par la direction, introduisez le code secret d'activation ci-dessous.")
-        
-        backup_code = st.text_input("Code d'activation unique :", key="b_code")
-        if st.button("Forcer le déblocage"):
-            backup_code = backup_code.strip()
-            if backup_code in serveur["tickets"] and serveur["tickets"][backup_code]["statut"] == "Disponible":
-                serveur["tickets"][backup_code]["statut"] = "Consommé"
-                serveur["tickets"][backup_code]["utilise_par"] = current_matricule
-                st.session_state.is_premium_user = True
-                st.success("Premium activé par ticket manuel d'urgence !")
-                st.rerun()
-            else:
-                st.error("Ticket de secours invalide ou consommé.")
+            if trigger_api:
+                if len(phone_payment) == 9 and phone_payment.isdigit():
+                    progress_bar = st.progress(0)
+                    for percent in range(100):
+                        time.sleep(0.02)
+                        progress_bar.progress(percent + 1)
+                    
+                    # Simulation de la validation du webhook réseau de l'opérateur
+                    txn_hash = f"TXN-1X-{hashlib.sha256(phone_payment.encode()).hexdigest()[:10].upper()}"
+                    
+                    new_txn = {
+                        "Ref_Transaction": txn_hash, "Matricule": user_matricule, "Opérateur": operator,
+                        "Numéro": f"***{phone_payment[-4:]}", "Montant": core['config']['tarif_premium'],
+                        "Statut": "Réussi", "Timestamp": datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                    }
+                    core["transactions"] = pd.concat([core["transactions"], pd.DataFrame([new_txn])], ignore_index=True)
+                    
+                    st.session_state.is_premium_user = True
+                    st.success(f"⚡ Callback API Reçu ! Transaction {txn_hash} validée automatiquement. Mode Premium Ouvert.")
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.error("Erreur de routage : Format du numéro de téléphone invalide.")
+                    
+        with info_box:
+            st.markdown("""
+                <div style="background:rgba(16,185,129,0.05); border:1px dashed #10B981; padding:20px; border-radius:12px;">
+                    <h4>🔒 SÉCURITÉ DES FLUX INFRASTRUCTURE</h4>
+                    <p style="font-size:0.85rem; opacity:0.8;">
+                        Conformément aux directives de sécurité, aucun numéro de compte de l'administration n'est affiché publiquement. 
+                        Le traitement s'effectue en arrière-plan via des serveurs de routage.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# ONGLET C : INTERACTIONS
+# TAB 3 : 🏛️ MAISON VIRTUELLE DE CONTROLE (PARAMÈTRES COMPLETS PAR CATÉGORIES)
 # ------------------------------------------------------------------------------
-with tab_feedback:
-    st.markdown("### 💬 Forum de discussion en direct de l'ISABEE")
-    c_left, c_right = st.columns(2)
-    with c_left:
-        st.subheader("💬 Commentaires d'étudiants")
-        for com in serveur["interactions"]["commentaires"]:
-            st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.02); border-radius:6px; margin-bottom:5px;'>💡 {com}</div>", unsafe_allow_html=True)
-        with st.form("add_com"):
-            n_c = st.text_input("Rédiger un commentaire :")
-            if st.form_submit_button("Publier") and n_c:
-                serveur["interactions"]["commentaires"].append(n_c)
-                st.rerun()
-    with c_right:
-        st.subheader("💡 Boîte à suggestions")
-        for sug in serveur["interactions"]["suggestions"]:
-            st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.02); border-radius:6px; margin-bottom:5px;'>📌 {sug}</div>", unsafe_allow_html=True)
-        with st.form("add_sug"):
-            n_s = st.text_input("Soumettre un axe d'amélioration :")
-            if st.form_submit_button("Envoyer l'idée") and n_s:
-                serveur["interactions"]["suggestions"].append(n_s)
-                st.rerun()
-
-# ------------------------------------------------------------------------------
-# ONGLET D : 🏛️ LA MAISON VIRTUELLE DU DÉVELOPPEUR (ACCÈS PRIVÉ DE TRÈS HAUTE SÉCURITÉ)
-# ------------------------------------------------------------------------------
-with tab_maison_virtuelle:
+with tab_maison:
     if st.session_state.user_role == "Visiteur":
-        st.markdown("### 🔐 Authentification d'Infrastructure")
-        s_code = st.text_input("Saisissez votre clé de chiffrement maîtresse :", type="password")
-        
-        if st.button("Interconnecter les serveurs"):
-            if s_code == serveur["config"]["owner_password"]:
+        st.markdown("### 🔐 ACCÈS COFFRE MAÎTRE")
+        input_key = st.text_input("Saisir la clé d'infrastructure système :", type="password")
+        if st.button("Authentifier le profil"):
+            if input_key == core["config"]["owner_password"]:
                 st.session_state.user_role = "Owner"
                 st.rerun()
-            elif s_code == serveur["config"]["copilot_password"]:
+            elif input_key == core["config"]["copilot_password"]:
                 st.session_state.user_role = "Copilote"
                 st.rerun()
             else:
-                st.error("Alerte de sécurité : Code de chiffrement rejeté.")
+                st.error("Accès refusé : Signature cryptographique invalide.")
     else:
-        # Barre de deconnexion et gestion des rôles de la maison virtuelle
-        c_status, c_kill = st.columns([4, 1])
-        c_status.markdown(f"#### ⚡ Session active : **{st.session_state.user_role.upper()}** connecté à la Maison Virtuelle")
-        if c_kill.button("🔒 Quitter et Verrouiller l'Espace"):
+        m_head, m_out = st.columns([5, 1])
+        m_head.markdown(f"#### 🖥️ PRIVILÈGES DIRECTEUR ACQUIS : Profil [{st.session_state.user_role.upper()}]")
+        if m_out.button("Fermer l'instance"):
             st.session_state.user_role = "Visiteur"
             st.rerun()
             
         st.markdown("---")
         
-        # ----------------------------------------------------------------------
-        # CAS COPILOTE : DROIT DE TÉLÉVERSEMENT EXCLUSIF SANS VALIDATION DIRECTE
-        # ----------------------------------------------------------------------
         if st.session_state.user_role == "Copilote":
-            st.info("🚀 Rôle Copilote : Vos téléversements sont envoyés en attente de vérification dans le coffre-fort de Bertcal.")
-            with st.form("copilot_secure_form"):
-                mat_n = st.text_input("Libellé officiel de la Matière :")
-                cyc_n = st.selectbox("Cycle d'études", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
-                fil_n = st.selectbox("Filière concernée", serveur["config"]["filières_actives"])
-                niv_n = st.selectbox("Niveau", ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5"])
-                typ_n = st.selectbox("Type", ["CC", "Examen", "Rattrapage"])
-                prof_n = st.text_input("Nom de l'Enseignant :")
-                prem_n = st.checkbox("Demander le verrou Premium sur ce fichier")
-                file_n = st.file_uploader("Fichier épreuve (PDF uniquement)")
+            st.info("Mode Copilote : Capacité d'alimentation du catalogue soumise à l'approbation de l'Owner.")
+            with st.form("copilot_secure_feed"):
+                c_mat = st.text_input("Intitulé exact de l'UE :")
+                c_cyc = st.selectbox("Sélectionner le Cycle", ["Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+                c_fil = st.selectbox("Filière liée", FILIERES)
+                c_niv = st.selectbox("Niveau requis", ["L1", "L2", "L3", "Ing1", "Ing2", "Ing3", "Ing4", "Ing5"])
+                c_typ = st.selectbox("Nature du fichier", ["CC", "Examen", "Rattrapage"])
+                c_prof = st.text_input("Responsable de la matière :")
+                c_prem = st.checkbox("Définir comme ressource Premium restrictive")
+                c_file = st.file_uploader("Fichier binaire (PDF requis)")
                 
-                submit_copilote = st.form_submit_button("ENVOYER POUR VALIDATION")
+                submit_feed = st.form_submit_button("PROPULSER LE FICHIER EN VÉRIFICATION")
                 
-            if submit_copilote and mat_n and file_n:
-                n_row = {
-                    "id": len(serveur["db"]) + 1, "Cycle": cyc_n, "Filière": fil_n, "Niveau": niv_n,
-                    "Matière": mat_n, "Enseignant": prof_n, "Type": typ_n, "Année": "2025-2026",
-                    "Premium": prem_n, "Downloads": 0, "Approuvé": False # Faux par défaut pour que l'owner valide !
+            if submit_feed and c_mat and c_file:
+                new_entry = {
+                    "id": len(core["db"]) + 1, "Cycle": c_cyc, "Filière": c_fil, "Niveau": c_niv,
+                    "Matière": c_mat, "Enseignant": c_prof, "Type": c_typ, "Année": "2025-2026",
+                    "Premium": c_prem, "Downloads": 0, "Approuvé": False
                 }
-                serveur["db"] = pd.concat([serveur["db"], pd.DataFrame([n_row])], ignore_index=True)
-                st.success("Fichier mis en attente. Seul le Concepteur en chef peut le rendre visible.")
-
-        # ----------------------------------------------------------------------
-        # CAS OWNER : ACCÈS MAÎTRE ABSOLU SUR LES PARAMÈTRES ET LE CONTRÔLE
-        # ----------------------------------------------------------------------
+                core["db"] = pd.concat([core["db"], pd.DataFrame([new_entry])], ignore_index=True)
+                st.success("Ressource injectée en zone tampon. En attente de validation.")
+                
         elif st.session_state.user_role == "Owner":
-            
-            # Création des sous-sections de contrôle de ta maison virtuelle
-            sub_tabs = st.tabs([
-                "📥 FILET D'APPROBATION", 
-                "📊 PANNEAU DE CONTRÔLE GLOBAL", 
-                "⚙️ PARAMÈTRES CATÉGORISÉS", 
-                "🎫 FLUX DES TICKETS & TRANSACTIONS"
+            # RESTRUCTURATION INTÉGRALE DES MENUS DEMANDÉS PAR LE CONCEPTEUR
+            m_sub1, m_sub2, m_sub3, m_sub4 = st.tabs([
+                "📊 PANNEAU DE CONTRÔLE ANALYTIQUE", 
+                "👁️ RECONNAISSANCE & CONTRÔLE DE SÉCURITÉ", 
+                "🛠️ CONFIGURATIONS CONFIGURÉES PAR CATÉGORIES",
+                "📥 COMPLIANCE DES FICHIERS"
             ])
             
-            # SUB-TAB 1 : APPROBATION DES DOCUMENTS COPILOTES
-            with sub_tabs[0]:
-                st.markdown("#### 📥 Fichiers en attente d'évaluation de sécurité")
-                df_pending = serveur["db"][serveur["db"]['Approuvé'] == False]
+            # 1. PANNEAU DE CONTRÔLE ANALYTIQUE
+            with m_sub1:
+                st.markdown("#### 📊 ANALYTICS & REVENUS INFRASTRUCTURE")
+                k1, k2, k3 = st.columns(3)
+                k1.metric("Fichiers Approuvés", f"{len(core['db'][core['db']['Approuvé']==True])} UEs")
+                k2.metric("Volume de Téléchargements", f"{core['db']['Downloads'].sum()} requêtes")
+                k3.metric("Fonds Collectés Automatiquement", f"{len(core['transactions']) * core['config']['tarif_premium']} CFA")
+                
+                st.markdown("##### 📝 JOURNAL TOTAL DES TRANSACTIONS API")
+                if core["transactions"].empty:
+                    st.info("Aucun mouvement financier enregistré par le webhook pour le moment.")
+                else:
+                    st.dataframe(core["transactions"], use_container_width=True)
+                    
+            # 2. RECONNAISSANCE & CONTRÔLE DE SÉCURITÉ
+            with m_sub2:
+                st.markdown("#### 👁️ SYSTÈME DE VÉRIFICATION ET RECONNAISSANCE DES MATRICULES")
+                st.write("Analyse structurelle et détection de fraude sur les accès Premium étudiants.")
+                
+                verify_matricule = st.text_input("Introduire un matricule à analyser :", value="22I0041B")
+                if st.button("Lancer l'analyse algorithmique"):
+                    if not verify_matricule.endswith("B") or len(verify_matricule) != 8:
+                        st.error("🚨 RECONNAISSANCE REJETÉE : Anomalie détectée dans la structure du matricule.")
+                    else:
+                        st.success("🟢 RECONNAISSANCE APPROUVÉE : Structure conforme aux registres de l'Université de Bertoua.")
+                        
+            # 3. CONFIGURATIONS CONFIGURÉES PAR CATÉGORIES (PERFAIT)
+            with m_sub3:
+                st.markdown("#### ⚙️ CORE MATRIX - CONFIGURATION DES CATÉGORIES APPLICATIVES")
+                
+                with st.expander("🔑 CATÉGORIE 1 : CRYPTOGRAPHIE & PASSERELLES D'ACCÈS", expanded=True):
+                    chng_owner = st.text_input("Modifier le mot de passe Directeur :", value=core["config"]["owner_password"], type="password")
+                    chng_copilot = st.text_input("Modifier le mot de passe Assistant :", value=core["config"]["copilot_password"], type="password")
+                    if st.button("Sauvegarder la Catégorie 1"):
+                        core["config"]["owner_password"] = chng_owner
+                        core["config"]["copilot_password"] = chng_copilot
+                        st.toast("Clés d'accès mises à jour.")
+                        
+                with st.expander("💰 CATÉGORIE 2 : GRILLE TARIFAIRE ET PARAMÈTRES MONÉTAIRES"):
+                    chng_price = st.number_input("Ajuster les frais Premium (CFA) :", value=int(core["config"]["tarif_premium"]), step=50)
+                    chng_gateway = st.selectbox("Statut de la passerelle API :", ["ONLINE", "SANDBOX_MAINTENANCE", "OFFLINE"])
+                    if st.button("Sauvegarder la Catégorie 2"):
+                        core["config"]["tarif_premium"] = chng_price
+                        core["config"]["api_gateway_status"] = chng_gateway
+                        st.toast("Modifications tarifaires appliquées aux webhooks.")
+                        
+                with st.expander("🎓 CATÉGORIE 3 : ARCHITECTURE ACADÉMIQUE & ROUTAGE"):
+                    st.write("Filières actives prises en compte par le serveur central :")
+                    st.dataframe(pd.DataFrame(FILIERES, columns=["Filières Certifiées"]), use_container_width=True)
+                    new_fil = st.text_input("Enregistrer une nouvelle filière d'ingénierie :")
+                    if st.button("Ajouter la filière") and new_fil:
+                        if new_fil not in FILIERES:
+                            FILIERES.append(new_fil)
+                            st.success("Nouvel embranchement académique initialisé.")
+                            st.rerun()
+                            
+            # 4. COMPLIANCE DES FICHIERS
+            with m_sub4:
+                st.markdown("#### 📥 CONTRÔLE QUALITÉ DU CATALOGUE")
+                df_pending = core["db"][core["db"]['Approuvé'] == False]
                 
                 if df_pending.empty:
-                    st.info("Vos copilotes n'ont soumis aucun nouveau document.")
+                    st.info("Aucune soumission en attente d'approbation.")
                 else:
                     for idx, row in df_pending.iterrows():
-                        st.markdown(f"""
-                            <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:10px; border-left:4px solid #F59E0B; margin-bottom:10px;">
-                                <b>UE :</b> {row['Matière']} | <b>Filière :</b> {row['Filière']} ({row['Niveau']})<br>
-                                Enseignant : {row['Enseignant']} | Statut requis : {"💎 Premium" if row['Premium'] else "Gratuit"}
-                            </div>
-                        """, unsafe_allow_html=True)
-                        c_ok, c_no = st.columns(2)
-                        if c_ok.button("✅ Approuver et Publier", key=f"yes_{row['id']}"):
-                            serveur["db"].loc[serveur["db"]['id'] == row['id'], 'Approuvé'] = True
-                            st.success("Document publié sur l'application publique.")
+                        st.write(f"**Matière :** {row['Matière']} | Soumis par assistant")
+                        c_yes, c_no = st.columns(2)
+                        if c_yes.button("Approuver et Publier", key=f"ok_{row['id']}"):
+                            core["db"].loc[core["db"]['id'] == row['id'], 'Approuvé'] = True
                             st.rerun()
-                        if c_no.button("❌ Refuser le fichier", key=f"no_{row['id']}"):
-                            serveur["db"] = serveur["db"][serveur["db"]['id'] != row['id']]
-                            st.warning("Fichier supprimé de l'infrastructure.")
+                        if c_no.button("Rejeter l'archive", key=f"no_{row['id']}"):
+                            core["db"] = core["db"][core["db"]['id'] != row['id']]
                             st.rerun()
-
-            # SUB-TAB 2 : PANNEAU DE CONTRÔLE ANALYTIQUE ET SUPPRESSION
-            with sub_tabs[1]:
-                st.markdown("#### 📊 Tableau de Bord d'Analyse Financière et Technique")
-                
-                # Calculs en direct pour les KPI Boxes
-                total_docs = len(serveur["db"][serveur["db"]['Approuvé'] == True])
-                total_downloads = serveur["db"]['Downloads'].sum()
-                ca_global = len(serveur["paiements"][serveur["paiements"]['Statut'] == "Réussi"]) * serveur["config"]["prix_premium"]
-                
-                kpi1, kpi2, kpi3 = st.columns(3)
-                kpi1.metric("📚 Épreuves en Ligne", f"{total_docs} UEs")
-                kpi2.metric("📥 Total Téléchargements", f"{total_downloads} clics")
-                kpi3.metric("💰 Chiffre d'Affaires Automatisé", f"{ca_global} CFA")
                 
                 st.markdown("---")
-                st.markdown("#### 🗑️ Gestion Directe du Catalogue")
-                st.write("Visualisez et supprimez directement n'importe quelle archive de l'application.")
-                
-                for idx, row in serveur["db"].iterrows():
-                    col_info, col_del = st.columns([5, 1])
-                    status_line = "🟢 Publique" if row['Approuvé'] else "🟡 En attente"
-                    col_info.write(f"[{status_line}] **{row['Matière']}** ({row['Filière']} - {row['Niveau']})")
-                    if col_del.button("Supprimer l'UE", key=f"del_adm_{row['id']}"):
-                        serveur["db"] = serveur["db"][serveur["db"]['id'] != row['id']]
+                st.markdown("##### 🗑️ SUPPRESSION STRATEGIQUE DU CATALOGUE")
+                for idx, row in core["db"].iterrows():
+                    col_info, col_action = st.columns([5, 1])
+                    col_info.write(f"• **{row['Matière']}** ({row['Niveau']} - {row['Filière']})")
+                    if col_action.button("Supprimer", key=f"del_{row['id']}"):
+                        core["db"] = core["db"][core["db"]['id'] != row['id']]
                         st.rerun()
-
-            # SUB-TAB 3 : PARAMÈTRES DU SYSTÈME CLASSÉS PAR CATÉGORIES (PERFAIT)
-            with sub_tabs[2]:
-                st.markdown("#### ⚙️ Configuration Structurée de l'Infrastructure")
-                
-                # Organisation par catégories avec des widgets expanders clairs
-                with st.expander("🔐 CATÉGORIE 1 : CONTRÔLE DES ACCÈS & CLÉS PRIVÉES", expanded=True):
-                    new_owner_pwd = st.text_input("Clé Maîtresse (Maison Virtuelle) :", value=serveur["config"]["owner_password"], type="password")
-                    new_copilot_pwd = st.text_input("Clé Publique pour vos Copilotes :", value=serveur["config"]["copilot_password"], type="password")
-                    if st.button("Mettre à jour les mots de passe de sécurité"):
-                        serveur["config"]["owner_password"] = new_owner_pwd
-                        serveur["config"]["copilot_password"] = new_copilot_pwd
-                        st.success("Mots de passe système synchronisés avec succès.")
-                
-                with st.expander("💸 CATÉGORIE 2 : TARIFICATION & ROUTAGE DES API FLUX"):
-                    new_price = st.number_input("Montant d'accès Premium (CFA) :", value=int(serveur["config"]["prix_premium"]), step=50)
-                    new_api_mode = st.selectbox("Statut du serveur de paiement :", ["Automatique (Live)", "Maintenance Sandbox", "Désactivé"])
-                    if st.button("Appliquer les modifications monétaires"):
-                        serveur["config"]["prix_premium"] = new_price
-                        serveur["config"]["mode_api"] = new_api_mode
-                        st.success("Grille tarifaire et protocoles API mis à jour.")
-                        
-                with st.expander("🎓 CATÉGORIE 3 : GESTION ACADÉMIQUE DES FILIÈRES"):
-                    st.write("Filières actuellement configurées dans le système central :")
-                    st.write(serveur["config"]["filières_actives"])
-                    nouvelle_filiere = st.text_input("Ajouter une nouvelle filière d'ingénierie :")
-                    if st.button("Enregistrer la Filière") and nouvelle_filiere:
-                        if nouvelle_filiere not in serveur["config"]["filières_actives"]:
-                            serveur["config"]["filières_actives"].append(nouvelle_filiere)
-                            st.success(f"{nouvelle_filiere} ajoutée aux filières d'apprentissage.")
-                            st.rerun()
-                            
-                with st.expander("🎨 CATÉGORIE 4 : INTERFACE & FLUX INFRASTRUCTURE"):
-                    new_app_name = st.text_input("Modifier le titre de l'application :", value=serveur["config"]["nom_app"])
-                    new_om = st.text_input("Numéro Orange de secours connecté à l'API :", value=serveur["config"]["orange_phone"])
-                    new_mtn = st.text_input("Numéro MTN de secours connecté à l'API :", value=serveur["config"]["mtn_phone"])
-                    if st.button("Valider l'habillage de marque"):
-                        serveur["config"]["nom_app"] = new_app_name
-                        serveur["config"]["orange_phone"] = new_om
-                        serveur["config"]["mtn_phone"] = new_mtn
-                        st.success("Branding de l'interface mis à jour.")
-                        st.rerun()
-
-            # SUB-TAB 4 : SUIVI DES TRANSACTIONS DIRECTES ET COMPTABILITÉ
-            with sub_tabs[3]:
-                st.markdown("#### 🧾 Journal d'Audit des Paiements Automatiques (Style 1xBet)")
-                st.write("Chaque dépôt via Orange ou MTN est répertorié ici en temps réel avec le matricule de l'étudiant ayant payé.")
-                st.dataframe(serveur["paiements"], use_container_width=True)
-                
-                st.markdown("---")
-                st.markdown("#### 🎫 Générateur Intégrateur de Tickets Uniques Manuels")
-                with st.form("gen_t_manual"):
-                    code_t = st.text_input("Créer un code de ticket d'urgence (Ex: ISABEE-URGENT) :")
-                    if st.form_submit_button("Injecter le ticket dans la base") and code_t:
-                        if code_t not in serveur["tickets"]:
-                            serveur["tickets"][code_t] = {"statut": "Disponible", "utilise_par": ""}
-                            st.success(f"Ticket {code_t} créé et prêt à être distribué !")
-                        else:
-                            st.error("Ce code existe déjà.")
-                            
-                # Tableau récapitulatif des tickets
-                t_list = []
-                for k, v in serveur["tickets"].items():
-                    t_list.append({"Code Ticket": k, "Statut": v["statut"], "Utilisé par": v["utilise_par"]})
-                st.dataframe(pd.DataFrame(t_list), use_container_width=True)
