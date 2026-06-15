@@ -134,10 +134,9 @@ def initialiser_base_globale():
         "mtn_target": "654046792",
         "logo_isabee": None,
         "logo_ubertoua": None,
-        # INSERER TES CLEFS DEPUIS LE DASHBOARD CAMPAY ICI
         "campay_username": "METS_TON_APP_USERNAME_ICI",
         "campay_password": "METS_TON_APP_PASSWORD_ICI",
-        "campay_mode": "Démo" # Change en "Live" dès que tu cliques sur Go Live
+        "campay_mode": "Démo"
     }
     return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config}
 
@@ -238,6 +237,10 @@ with tab_public_content:
     if df_view.empty:
         st.info("Aucun document trouvé pour ces critères.")
     else:
+        # Fonction callback pour incrémenter proprement le compteur après un téléchargement réel
+        def incrementer_compteur_telechargement(doc_id):
+            serveur_data["db"].loc[serveur_data["db"]['id'] == doc_id, 'Downloads'] += 1
+
         for idx, row in df_view.iterrows():
             badge = "<span class='badge-premium'>💎 PREMIUM (Corrigé)</span>" if row['Premium'] else "<span class='badge-free'>🆓 GRATUIT</span>"
             st.markdown(f"""
@@ -258,13 +261,26 @@ with tab_public_content:
                 if row['Premium'] and not st.session_state.is_premium_user:
                     st.button("🔒 Débloquer le corrigé (300F requis)", key=f"l_{row['id']}", disabled=True)
                 else:
-                    if st.button(f"📥 Télécharger le PDF", key=f"d_{row['id']}"):
-                        serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Downloads'] += 1
-                        st.success("Téléchargement lancé !")
+                    # Extraction sécurisée des octets réels du fichier ou fallback démo si vide
+                    try:
+                        content_pdf = row["file_bytes"] if ("file_bytes" in row.index and pd.notna(row["file_bytes"])) else b"%PDF-1.5\n% Document Virtuel Source Isabee"
+                    except:
+                        content_pdf = b"%PDF-1.5\n% Document Virtuel Source Isabee"
+                    
+                    # CORRECTION MAJEURE : Remplacement par le bouton de téléchargement natif navigateur/téléphone
+                    st.download_button(
+                        label="📥 Télécharger le PDF",
+                        data=content_pdf,
+                        file_name=f"{row['Matière'].replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        key=f"d_{row['id']}",
+                        on_click=incrementer_compteur_telechargement,
+                        args=(row['id'],)
+                    )
             with c2:
                 if st.button("⭐ Garder en Favori", key=f"f_{row['id']}"):
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
-                    st.toast("Ajouté aux favoris privés !")
+                    st.toast("Ajouté aux favoris privés!")
 
 # --- ONGLET 2 : PASSERELLE DE PAIEMENT CAMPAY EN DIRECT ---
 with tab_payment_gateway:
@@ -279,7 +295,6 @@ with tab_payment_gateway:
         st.markdown("#### Formulaire d'Abonnement Automatisé")
         operator = st.radio("Sélectionnez votre opérateur :", ["Orange Money", "MTN MoMo"])
         
-        # Gestion intelligente de la contrainte Démo à 25 XAF vue sur ta capture
         if mode_actuel == "Démo":
             st.info("💡 En mode Démo, la valeur est fixée à 25 XAF au lieu de 300F maximum, conformément aux spécifications CamPay.")
             montant_reel = 25
@@ -298,11 +313,9 @@ with tab_payment_gateway:
                 
                 status_box.warning("🔄 Authentification auprès des serveurs CamPay...")
                 
-                # BASE URL Dynamique selon ton avancée
                 base_url = "https://demo.campay.net/api" if mode_actuel == "Démo" else "https://www.campay.net/api"
                 
                 try:
-                    # Étape A : Récupération du Token d'accès sécurisé
                     token_url = f"{base_url}/token/"
                     token_data = json.dumps({
                         "app_username": serveur_data["config"]["campay_username"],
@@ -318,7 +331,6 @@ with tab_payment_gateway:
                     progress_bar.progress(40)
                     status_box.info(f"📲 Requête Push USSD émise. Regarde ton téléphone pour saisir ton code PIN...")
                     
-                    # Étape B : Lancement du Collect (Retrait Mobile)
                     collect_url = f"{base_url}/collect/"
                     collect_payload = json.dumps({
                         "amount": str(montant_reel),
@@ -341,7 +353,6 @@ with tab_payment_gateway:
                     
                     progress_bar.progress(70)
                     
-                    # Étape C : Boucle de vérification d'état (Poling status pendant 15s)
                     paiement_reussi = False
                     for check in range(5):
                         status_box.info(f"⏳ Vérification de ton code PIN sur le réseau Télécom ({check+1}/5)...")
@@ -359,8 +370,7 @@ with tab_payment_gateway:
                             elif statut == "FAILED":
                                 break
                     
-                    # Résultat final
-                    if paiement_reussi or mode_actuel == "Démo":  # En Démo on force le passage pour avancer
+                    if paiement_reussi or mode_actuel == "Démo":
                         progress_bar.progress(100)
                         status_box.success("✅ Débit validé avec succès par CamPay !")
                         
@@ -449,7 +459,7 @@ with tab_dev_zone:
         st.markdown(f"**Niveau d'accréditation actuel :** `{st.session_state.dev_role}`")
         st.markdown("---")
         
-        # MODULE DE SOUMISSION UNIQUE - SÉCURISÉ CONTRE LES ERREURS D'INDENTATION
+        # MODULE DE SOUMISSION UNIQUE - SÉCURISÉ
         if st.session_state.dev_role in ["Copilote", "Chief"]:
             st.markdown("### 🚀 Module de Soumission de Documents (DÉPÔT ÉLITE)")
             
@@ -463,24 +473,26 @@ with tab_dev_zone:
                 u_prem = st.checkbox("Verrouiller derrière l'accès Premium (300F)")
                 u_file = st.file_uploader("Fichier")
                 
-                # Le bouton est obligatoirement ICI, fermant la structure proprement
                 btn_publier = st.form_submit_button("SOUMETTRE LE DOCUMENT POUR FILTRAGE")
                 
             if btn_publier:
                 if u_mat and u_file:
+                    # CORRECTION : Lecture et sauvegarde immédiate des octets du fichier binaire importé
+                    donnees_du_fichier = u_file.read()
+                    
                     temp_row = {
                         "id": int(len(serveur_data["db"]) + len(serveur_data["staging"]) + 1), 
                         "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, 
                         "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", 
                         "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), 
-                        "Favori": False, "Soumis_Par": st.session_state.dev_role
+                        "Favori": False, "Soumis_Par": st.session_state.dev_role,
+                        "file_bytes": donnees_du_fichier  # Sauvegarde persistante en RAM
                     }
                     
                     if st.session_state.dev_role == "Copilote":
                         serveur_data["staging"].append(temp_row)
                         st.warning("⚠️ Document stocké dans le sas d'attente. En attente de validation exclusive par le Concepteur en Chef.")
                     else:
-                        # SYNTAXE DE PRODUCTION ADAPTÉE ET SÉCURISÉE CONTRE LES PARENTHÈSES OUVERTES
                         new_dataframe_row = pd.DataFrame([temp_row])
                         serveur_data["db"] = pd.concat([serveur_data["db"], new_dataframe_row], ignore_index=True)
                         st.success("✅ Document injecté directement en base publique.")
@@ -555,7 +567,6 @@ with tab_dev_zone:
             with sub_tab_config_system:
                 st.markdown("#### Intégration des Identifiants CamPay Secrets")
                 
-                # C'est ici que tu vas coller tes vraies valeurs CamPay
                 serveur_data["config"]["campay_username"] = st.text_input("CamPay APP USERNAME :", value=serveur_data["config"]["campay_username"])
                 serveur_data["config"]["campay_password"] = st.text_input("CamPay APP PASSWORD :", value=serveur_data["config"]["campay_password"], type="password")
                 serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnemental :", ["Démo", "Live"])
