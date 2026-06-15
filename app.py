@@ -9,97 +9,7 @@ import json
 import urllib.request
 
 # ==============================================================================
-# 1. VISUELS & INJECTION CSS DE SÉCURITÉ (ANTI-ÉCRAN BLANC MOBILE)
-# ==============================================================================
-st.set_page_config(
-    page_title="SOURCE ISABEE — L'Élite Académique",
-    page_icon="💎",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-    
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {
-        background: #010D08 !important;
-        background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
-        color: #FFFFFF !important;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-        color: #FFFFFF !important;
-    }
-    
-    .glow-title {
-        font-size: 4.5rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF;
-        text-align: center;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        letter-spacing: -2px;
-        text-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
-    }
-    @media (max-width: 768px) { .glow-title { font-size: 2.5rem !important; } }
-    
-    .glow-subtitle {
-        text-align: center; font-size: 1.2rem; color: #A7F3D0; margin-bottom: 30px; font-weight: 500; opacity: 0.9;
-    }
-    
-    .welcome-banner {
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 40px;
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
-    }
-    
-    .welcome-text { font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }
-
-    .stTabs [data-baseweb="tab-list"] { gap: 15px !important; background-color: transparent !important; padding: 10px 0 !important; }
-    .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(16, 185, 129, 0.25) !important;
-        border-radius: 14px !important;
-        padding: 16px 24px !important; font-size: 1.05rem !important; font-weight: 700 !important; color: #E5E7EB !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(90deg, #10B981 0%, #059669 100%) !important;
-        color: #FFFFFF !important; border-color: #34D399 !important;
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
-    }
-
-    .big-logo-box {
-        background: rgba(255, 255, 255, 0.02) !important; border: 2px dashed #10B981 !important;
-        border-radius: 12px; padding: 20px 5px; text-align: center; color: #34D399 !important; font-weight: 800; font-size: 0.8rem;
-    }
-
-    .sidebar-blue-footer {
-        border-top: 1px solid rgba(56, 189, 248, 0.2); padding-top: 20px; margin-top: 40px;
-        font-size: 0.88rem; line-height: 1.6; color: #38BDF8 !important; text-align: center !important;
-    }
-    .sidebar-blue-footer b, .sidebar-blue-footer strong { color: #00E5FF !important; }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(16, 185, 129, 0.15);
-        border-radius: 16px; padding: 22px; margin-bottom: 20px;
-    }
-    .badge-premium { background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-    .badge-free { background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
-    
-    .chief-vault {
-        background: linear-gradient(135deg, #090514 0%, #110426 100%) !important;
-        border: 2px solid #8B5CF6 !important;
-        border-radius: 16px; padding: 25px; margin-top: 20px;
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ==============================================================================
-# 2. LE CERVEAU CENTRALISÉ DE PRODUCTION (PARTAGÉ & PERSISTANT)
+# 1. LE CERVEAU CENTRALISÉ DE PRODUCTION (PARTAGÉ & PERSISTANT)
 # ==============================================================================
 FILIERES = [
     "Production Végétale", "Production Animale", "Protection des Cultures",
@@ -136,49 +46,115 @@ def initialiser_base_globale():
         "logo_ubertoua": None,
         "campay_username": "METS_TON_APP_USERNAME_ICI",
         "campay_password": "METS_TON_APP_PASSWORD_ICI",
-        "campay_mode": "Démo"
+        "campay_mode": "Démo",
+        "font_size": 16,
+        "title_size": 4.5,
+        "primary_color": "#10B981",
+        "secondary_color": "#059669"
     }
     return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config}
 
 serveur_data = initialiser_base_globale()
 
+# Extraction dynamique des styles pour le CSS réactif
+f_size = serveur_data["config"].get("font_size", 16)
+t_size = serveur_data["config"].get("title_size", 4.5)
+p_color = serveur_data["config"].get("primary_color", "#10B981")
+s_color = serveur_data["config"].get("secondary_color", "#059669")
+
+# ==============================================================================
+# 2. VISUELS & INJECTION CSS DYNAMIQUE ET ADAPTATIVE
+# ==============================================================================
+st.set_page_config(
+    page_title="SOURCE ISABEE — L'Élite Académique",
+    page_icon="💎",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&family=JetBrains+Mono:wght=400;700&display=swap');
+    
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {{
+        background: #010D08 !important;
+        background-image: linear-gradient(135deg, #010D08 0%, #021F14 50%, #000503 100%) !important;
+        color: #FFFFFF !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: {f_size}px !important;
+    }}
+    
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
+        color: #FFFFFF !important;
+    }}
+    
+    .glow-title {{
+        font-size: {t_size}rem !important;
+        font-weight: 800 !important;
+        color: #FFFFFF;
+        text-align: center;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: -2px;
+        text-shadow: 0 0 20px {p_color}, 0 0 40px rgba(16, 185, 129, 0.4);
+    }}
+    @media (max-width: 768px) {{ .glow-title {{ font-size: 2.5rem !important; }} }}
+    
+    .glow-subtitle {{
+        text-align: center; font-size: 1.2rem; color: #A7F3D0; margin-bottom: 30px; font-weight: 500; opacity: 0.9;
+    }}
+    
+    .welcome-banner {{
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
+        border: 1px solid {p_color};
+        padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 40px;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+    }}
+    
+    .welcome-text {{ font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }}
+
+    .stTabs [data-baseweb="tab-list"] {{ gap: 15px !important; background-color: transparent !important; padding: 10px 0 !important; }}
+    .stTabs [data-baseweb="tab"] {{
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        border-radius: 14px !important;
+        padding: 16px 24px !important; font-size: 1.05rem !important; font-weight: 700 !important; color: #E5E7EB !important;
+    }}
+    .stTabs [aria-selected="true"] {{
+        background: linear-gradient(90deg, {p_color} 0%, {s_color} 100%) !important;
+        color: #FFFFFF !important; border-color: #34D399 !important;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
+    }}
+
+    .big-logo-box {{
+        background: rgba(255, 255, 255, 0.02) !important; border: 2px dashed {p_color} !important;
+        border-radius: 12px; padding: 20px 5px; text-align: center; color: #34D399 !important; font-weight: 800; font-size: 0.8rem;
+    }}
+
+    .sidebar-blue-footer {{
+        border-top: 1px solid rgba(56, 189, 248, 0.2); padding-top: 20px; margin-top: 40px;
+        font-size: 0.88rem; line-height: 1.6; color: #38BDF8 !important; text-align: center !important;
+    }}
+    .sidebar-blue-footer b, .sidebar-blue-footer strong {{ color: #00E5FF !important; }}
+
+    .glass-card {{
+        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(16, 185, 129, 0.15);
+        border-radius: 16px; padding: 22px; margin-bottom: 20px;
+    }}
+    .badge-premium {{ background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }}
+    .badge-free {{ background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }}
+    
+    .chief-vault {{
+        background: linear-gradient(135deg, #090514 0%, #110426 100%) !important;
+        border: 2px solid #8B5CF6 !important;
+        border-radius: 16px; padding: 25px; margin-top: 20px;
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
 if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user = False
 if 'dev_role' not in st.session_state: st.session_state.dev_role = None
-
-# ==============================================================================
-# 2.5 BARRIÈRE DE LIAISON INITIALE OBLIGATOIRE (E-MAIL OU TÉLÉPHONE)
-# ==============================================================================
-if 'user_linked' not in st.session_state:
-    st.session_state.user_linked = False
-
-if not st.session_state.user_linked:
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='glow-subtitle'>L'Élite Académique — Université de Bertoua</p>", unsafe_allow_html=True)
-    
-    col_center_auth, _ = st.columns([2, 1])
-    with col_center_auth:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("<h3 style='color:#34D399; margin-top:0;'>🔐 Activation du démarrage</h3>", unsafe_allow_html=True)
-        st.write("Veuillez lier votre compte étudiant pour accéder aux archives.")
-        
-        with st.form("startup_identity_form"):
-            user_input_identifier = st.text_input("Adresse E-mail ou Numéro de Téléphone :", placeholder="exemple@gmail.com ou 6xxxxxxxx")
-            agree_terms = st.checkbox("J'accepte les conditions d'utilisation de la plateforme.", value=True)
-            
-            submit_identity = st.form_submit_button("🚀 ENTRER DANS L'APPLICATION")
-            if submit_identity:
-                if not user_input_identifier.strip():
-                    st.error("Action requise : Veuillez fournir un identifiant valide.")
-                elif not agree_terms:
-                    st.warning("Vous devez accepter les conditions pour continuer.")
-                else:
-                    st.session_state.user_linked = True
-                    st.session_state.user_contact = user_input_identifier.strip()
-                    st.toast("Compte lié avec succès au démarrage !")
-                    st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
 
 # ==============================================================================
 # 3. BARRE LATÉRALE (AUTHENTIFICATION, SYSTÈME TICKET UNIQUE & FILTRES)
@@ -186,11 +162,15 @@ if not st.session_state.user_linked:
 with st.sidebar:
     col_l1, col_l2 = st.columns(2)
     with col_l1:
-        if serveur_data["config"]["logo_isabee"] is not None: st.image(serveur_data["config"]["logo_isabee"], use_container_width=True)
-        else: st.markdown('<div class="big-logo-box">🏛️<br>ISABEE LOGO</div>', unsafe_allow_html=True)
+        if serveur_data["config"]["logo_isabee"] is not None: 
+            st.image(serveur_data["config"]["logo_isabee"], use_container_width=True)
+        else: 
+            st.markdown('<div class="big-logo-box">🏛️<br>ISABEE LOGO</div>', unsafe_allow_html=True)
     with col_l2:
-        if serveur_data["config"]["logo_ubertoua"] is not None: st.image(serveur_data["config"]["logo_ubertoua"], use_container_width=True)
-        else: st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
+        if serveur_data["config"]["logo_ubertoua"] is not None: 
+            st.image(serveur_data["config"]["logo_ubertoua"], use_container_width=True)
+        else: 
+            st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
             
     st.markdown("### 🔑 ACCÈS COMPTE & VALIDATION TICKET")
     user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
@@ -219,7 +199,6 @@ with st.sidebar:
 
     st.markdown(f"""
         <div class="sidebar-blue-footer">
-            Dans votre session: <b>{st.session_state.get('user_contact', 'Connecté')}</b><br>
             Développé par: <b>Chemta Caleb Bertrand</b><br>
             étudiant ingénieur en génie énergétique.<br>
             <br>
@@ -231,150 +210,17 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE PRINCIPAL & PANNEAU CONFIGURATION PARAMÈTRES (POPOVER)
+# 4. EN-TÊTE PRINCIPAL
 # ==============================================================================
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
 
-# Alignement côte à côte de la bienvenue et des paramètres structurés
-col_banner, col_settings_trigger = st.columns([83, 17], vertical_alignment="center")
-
-with col_banner:
-    st.markdown("""
-        <div class="welcome-banner" style="margin-bottom:0px;">
-            <p class="welcome-text" style="margin:0; font-size:1.5rem !important;">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
-            <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.90rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col_settings_trigger:
-    with st.popover("⚙️ Paramètres App", use_container_width=True):
-        st.markdown("### 🛠️ Options de Configuration")
-        
-        tab_p1, tab_p2, tab_p3, tab_p4 = st.tabs(["👤 Identité", "🔒 Sécurité", "⚙️ Système", "💼 Business & Pro"])
-        
-        with tab_p1:
-            st.markdown("**Compte et profil**")
-            st.text_input("Nom d'utilisateur", value="Utilisateur_Isabee")
-            st.file_uploader("Photo de profil", type=["png", "jpg", "jpeg"], key="cfg_prof_pic")
-            st.text_input("Adresse e-mail", value=st.session_state.user_contact if "@" in st.session_state.user_contact else "")
-            st.text_input("Numéro de téléphone", value="" if "@" in st.session_state.user_contact else st.session_state.user_contact)
-            st.text_input("Mot de passe", type="password", value="defaultpassword")
-            st.button("Mettre à jour le Profil", key="btn_up_prof")
-            
-            st.markdown("---")
-            st.markdown("**Notifications**")
-            st.checkbox("Notifications push", value=True)
-            st.checkbox("Notifications par e-mail", value=True)
-            st.checkbox("Sons et vibrations", value=False)
-            st.button("Alertes personnalisées")
-
-        with tab_p2:
-            st.markdown("**Confidentialité et sécurité**")
-            st.button("Paramètres de confidentialité")
-            st.checkbox("Authentification à deux facteurs")
-            st.button("Gestion des appareils connectés")
-            st.button("Permissions accordées à l'application")
-            st.button("Blocage et signalement d'utilisateurs")
-            
-            st.markdown("---")
-            st.markdown("**Déconnexion et suppression**")
-            if st.button("🚪 Déconnexion", key="logout_action_btn", use_container_width=True):
-                st.session_state.user_linked = False
-                st.session_state.dev_role = None
-                st.rerun()
-            if st.button("❌ Désactivation du compte", use_container_width=True):
-                st.warning("Compte désactivé temporairement.")
-            if st.button("🚨 Suppression définitive du compte", use_container_width=True):
-                st.error("Action critique initiée.")
-
-        with tab_p3:
-            st.markdown("**Apparence**")
-            st.selectbox("Mode clair/sombre", ["Mode Sombre 🌙", "Mode Clair ☀️"])
-            st.selectbox("Langue", ["Français", "Anglais"], key="lang_box_1")
-            st.slider("Taille du texte", 12, 22, 14)
-            st.selectbox("Thème ou couleurs", ["Vert Émeraude Isabee", "Bleu Cobalt", "Or Élite"])
-            
-            st.markdown("**Données et stockage**")
-            st.button("Utilisation du stockage")
-            if st.button("Vider le cache"):
-                st.toast("Cache nettoyé.")
-            st.button("Téléchargements")
-            st.checkbox("Sauvegarde et synchronisation", value=True)
-            
-            st.markdown("**Accessibilité**")
-            st.slider("Taille des caractères", 12, 22, 14, key="access_slider")
-            st.checkbox("Lecture vocale")
-            st.checkbox("Contraste élevé")
-            st.checkbox("Sous-titres")
-            
-            st.markdown("**Préférences générales**")
-            st.selectbox("Région", ["Cameroun", "Afrique Centrale", "International"])
-            st.write(f"Date et heure de session : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-            st.button("Paramètres de connexion")
-            
-            st.markdown("**Aide & À propos**")
-            with st.expander("ℹ️ Mentions et Support"):
-                st.button("FAQ")
-                st.button("Centre d'aide")
-                st.button("Contact du support")
-                st.button("Signalement de problèmes")
-                st.write("Version de l'application : v2.6.15-Pro")
-                st.button("Conditions d'utilisation")
-                st.button("Politique de confidentialité")
-                st.button("Mentions légales")
-
-        with tab_p4:
-            st.markdown("**Gestion du compte & Administration**")
-            st.button("Informations du propriétaire")
-            st.button("Changement du mot de passe Administrateur")
-            st.button("Sécurité du compte d'infrastructure")
-            st.checkbox("Authentification à deux facteurs Pro", value=True)
-            
-            st.markdown("**Équipe et utilisateurs**")
-            st.button("Ajouter un collaborateur")
-            st.button("Supprimer un collaborateur")
-            st.selectbox("Rôles et permissions", ["Super Admin", "Chef Concepteur", "Copilote"])
-            st.button("Historique des connexions de l'équipe")
-            
-            st.markdown("**Paiements et facturation**")
-            st.button("Moyens de paiement acceptés")
-            st.button("Factures générées")
-            st.button("Abonnements actifs")
-            st.button("Historique des transactions financières")
-            
-            st.markdown("**Notifications Pro**")
-            st.checkbox("E-mails professionnels")
-            st.checkbox("Alertes de commandes")
-            st.checkbox("Alertes de paiement")
-            st.checkbox("Notifications clients")
-            
-            st.markdown("**Paramètres commerciaux**")
-            st.text_input("Horaires d'ouverture", value="24h/24 - En ligne")
-            st.text_input("Services proposés", value="Archives Académiques Universitaires")
-            st.text_input("Tarifs standards", value="300 F CFA")
-            st.text_input("Zones d'intervention ou de livraison", value="ISABEE / U-BERTOUA")
-            
-            st.markdown("**Confidentialité et conformité**")
-            st.button("Politique de confidentialité commerciale")
-            st.button("Conditions générales de vente (CGV)")
-            st.button("Gestion des données clients (RGPD)")
-            
-            st.markdown("**Intégrations & Infrastructure**")
-            st.button("Réseaux sociaux branchés")
-            st.button("Outils de paiement (Passerelle CamPay)")
-            st.button("Logiciels de gestion intégrés")
-            st.button("Documentation API Technique")
-            st.button("Assistance & Signalement infrastructure")
-            
-            st.markdown("**Statistiques globales**")
-            col_s1, col_s2, col_s3 = st.columns(3)
-            col_s1.metric("Clients", "1,420")
-            col_s2.metric("Ventes", "945")
-            col_s3.metric("C.A.", "283,500 F")
-            st.button("Performances approfondies de l'activité")
-
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("""
+    <div class="welcome-banner">
+        <p class="welcome-text">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
+        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
+    </div>
+""", unsafe_allow_html=True)
 
 df_view = serveur_data["db"].copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
@@ -476,7 +322,6 @@ with tab_payment_gateway:
             else:
                 status_box = st.empty()
                 progress_bar = st.progress(0)
-                
                 status_box.warning("🔄 Authentification auprès des serveurs CamPay...")
                 base_url = "https://demo.campay.net/api" if mode_actuel == "Démo" else "https://www.campay.net/api"
                 
@@ -517,7 +362,6 @@ with tab_payment_gateway:
                         ref_transaction = res_col.get("reference")
                     
                     progress_bar.progress(70)
-                    
                     paiement_reussi = False
                     for check in range(5):
                         status_box.info(f"⏳ Vérification de ton code PIN sur le réseau Télécom ({check+1}/5)...")
@@ -624,7 +468,6 @@ with tab_dev_zone:
         st.markdown(f"**Niveau d'accréditation actuel :** `{st.session_state.dev_role}`")
         st.markdown("---")
         
-        # MODULE DE SOUMISSION UNIQUE - SÉCURISÉ
         if st.session_state.dev_role in ["Copilote", "Chief"]:
             st.markdown("### 🚀 Module de Soumission de Documents (DÉPÔT ÉLITE)")
             
@@ -643,7 +486,6 @@ with tab_dev_zone:
             if btn_publier:
                 if u_mat and u_file:
                     donnees_du_fichier = u_file.read()
-                    
                     temp_row = {
                         "id": int(len(serveur_data["db"]) + len(serveur_data["staging"]) + 1), 
                         "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, 
@@ -674,12 +516,11 @@ with tab_dev_zone:
                 </div>
             """, unsafe_allow_html=True)
             
-            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system, sub_tab_logos_mgr = st.tabs([
-                "📥 VALIDATION DES SOUMISSIONS COPILOTES",
-                "🎫 INJECTEUR INTELLIGENT DE TICKETS",
-                "👑 PANNEAU DE CONTRÔLE DE LA BASE",
-                "⚙️ CONFIGURATION DES CLÉS APIS (CAMPAY)",
-                "🖼️ PRÉFÉRENCES LOGOS ET VISUELS"
+            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system = st.tabs([
+                "📥 VALIDATION DES SOUMISSIONS",
+                "🎫 INJECTEUR DE TICKETS",
+                "👑 PANNEAU DE CONTRÔLE DE BASE",
+                "⚙️ CONFIGURATION GLOBALE & VISUELS"
             ])
             
             with sub_tab_vault:
@@ -713,33 +554,63 @@ with tab_dev_zone:
                     num_to_gen = st.number_input("Nombre de pass à injecter :", min_value=1, max_value=50, value=5)
                     if st.button("⚡ Injecter de force"):
                         for _ in range(num_to_gen):
-                            ticket_gen = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-                            serveur_data["tickets"].append(ticket_gen)
-                        st.success(f"{num_to_gen} Pass d'accès uniques injectés avec succès.")
+                            code = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+                            serveur_data["tickets"].append(code)
+                        st.success(f"Modifications appliquées au registre.")
                         st.rerun()
                 with col_list:
-                    st.markdown("**Tickets encore valides en base :**")
                     st.write(serveur_data["tickets"])
 
             with sub_tab_global_db:
-                st.markdown("#### Administration de la base de données brute")
-                st.dataframe(serveur_data["db"])
+                st.markdown("#### 🎛️ Panneau de Contrôle Central de la Base")
+                
+                col_stat1, col_stat2, col_stat3 = st.columns(3)
+                col_stat1.metric("Sujets Actifs", len(serveur_data["db"]))
+                col_stat2.metric("En Attente", len(serveur_data["staging"]))
+                col_stat3.metric("Pass Premium Disponibles", len(serveur_data["tickets"]))
+                
+                st.markdown("---")
+                st.markdown("#### Destruction d'Autorité")
+                for idx, row in serveur_data["db"].iterrows():
+                    col_n, col_b = st.columns([4, 1])
+                    col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
+                    if col_b.button("Supprimer", key=f"del_sec_{row['id']}"):
+                        serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
+                        st.success(f"Supprimé : {row['Matière']}")
+                        st.rerun()
 
             with sub_tab_config_system:
-                st.markdown("#### Configuration des Identifiants CamPay")
-                serveur_data["config"]["campay_username"] = st.text_input("Username API CamPay", value=serveur_data["config"]["campay_username"])
-                serveur_data["config"]["campay_password"] = st.text_input("Password API CamPay", type="password", value=serveur_data["config"]["campay_password"])
-                serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnement API", ["Démo", "Production"], index=0 if serveur_data["config"]["campay_mode"] == "Démo" else 1)
-
-            with sub_tab_logos_mgr:
-                st.markdown("#### 🖼️ Remplacer et mettre à jour les logos de la barre latérale")
-                up_isabee_file = st.file_uploader("Téléverser le nouveau logo ISABEE :", type=["png", "jpg", "jpeg"])
-                up_ubertoua_file = st.file_uploader("Téléverser le nouveau logo U-BERTOUA :", type=["png", "jpg", "jpeg"])
+                st.markdown("#### ⚙️ Configuration des Clés API CamPay")
+                serveur_data["config"]["campay_username"] = st.text_input("CamPay APP USERNAME :", value=serveur_data["config"]["campay_username"])
+                serveur_data["config"]["campay_password"] = st.text_input("CamPay APP PASSWORD :", value=serveur_data["config"]["campay_password"], type="password")
+                serveur_data["config"]["campay_mode"] = st.selectbox("Mode Environnemental :", ["Démo", "Live"])
                 
-                if st.button("💾 Sauvegarder et appliquer les logos visuels"):
-                    if up_isabee_file is not None:
-                        serveur_data["config"]["logo_isabee"] = up_isabee_file.read()
-                    if up_ubertoua_file is not None:
-                        serveur_data["config"]["logo_ubertoua"] = up_ubertoua_file.read()
-                    st.success("Logos d'infrastructure mis à jour ! Actualisation en cours...")
+                st.markdown("#### 📞 Numéros Marchands Mobiles")
+                serveur_data["config"]["orange_target"] = st.text_input("Cible Orange Money :", value=serveur_data["config"]["orange_target"])
+                serveur_data["config"]["mtn_target"] = st.text_input("Cible MTN MoMo :", value=serveur_data["config"]["mtn_target"])
+                
+                st.markdown("---")
+                st.markdown("#### 🖼️ Préférences Logos & Visuels")
+                logo_isabee_file = st.file_uploader("Modifier le Logo ISABEE", type=["png", "jpg", "jpeg"])
+                if logo_isabee_file:
+                    serveur_data["config"]["logo_isabee"] = logo_isabee_file.read()
+                    st.success("Logo ISABEE mis à jour avec succès !")
+                    st.rerun()
+                    
+                logo_ubertoua_file = st.file_uploader("Modifier le Logo U-BERTOUA", type=["png", "jpg", "jpeg"])
+                if logo_ubertoua_file:
+                    serveur_data["config"]["logo_ubertoua"] = logo_ubertoua_file.read()
+                    st.success("Logo U-BERTOUA mis à jour avec succès !")
+                    st.rerun()
+
+                st.markdown("---")
+                st.markdown("#### 🎨 Personnalisation du Thème & Tailles")
+                serveur_data["config"]["font_size"] = st.slider("Taille de la police globale (px)", 12, 24, int(serveur_data["config"]["font_size"]))
+                serveur_data["config"]["title_size"] = st.slider("Taille du titre principal (rem)", 2.0, 7.0, float(serveur_data["config"]["title_size"]), step=0.1)
+                
+                serveur_data["config"]["primary_color"] = st.color_picker("Couleur Néon Principale (Accents / Titre)", serveur_data["config"]["primary_color"])
+                serveur_data["config"]["secondary_color"] = st.color_picker("Couleur Gradiant Secondaire", serveur_data["config"]["secondary_color"])
+                
+                if st.button("💾 Sauvegarder les Préférences Visuelles"):
+                    st.success("Modifications visuelles injectées et appliquées !")
                     st.rerun()
