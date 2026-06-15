@@ -155,7 +155,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. INITIALISATION ET PERSISTENCE SECURE DES DONNÉES
+# 2. LE CERVEAU CENTRALISÉ (PARTAGÉ ENTRE TOUS LES TÉLÉPHONES)
 # ==============================================================================
 FILIERES = [
     "Production Végétale", "Production Animale", "Protection des Cultures",
@@ -168,47 +168,56 @@ FILIERES = [
     "Études d'Impact Environnemental et Social"
 ]
 
-if 'db' not in st.session_state:
-    st.session_state.db = pd.DataFrame([
+@st.cache_resource
+def initialiser_base_globale():
+    """Cette fonction crée la mémoire partagée unique pour tout le serveur."""
+    base_sujets = pd.DataFrame([
         {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique et Transfert Thermique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Date": "12/03/2026", "Favori": False},
         {"id": 2, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Mécanique des Fluides Appliquée + CORRIGÉ", "Enseignant": "Pr. Ndongo", "Type": "Examen", "Année": "2024-2025", "Premium": True, "Downloads": 92, "Date": "18/03/2026", "Favori": False}
     ])
-    st.session_state.is_premium_user = False
-    st.session_state.dev_password = "admin" # Mot de passe initial configurable
-    st.session_state.dev_logged_in = False
-    
-    # Gestionnaires d'images de logos dynamiques
-    st.session_state.logo_isabee = None
-    st.session_state.logo_ubertoua = None
-    
-    st.session_state.interactions = {
+    interactions = {
         "commentaires": ["Excellente lisibilité sur les sujets de Génie Énergétique.", "Sujet de Thermo Ing4 disponible !"],
         "suggestions": ["Ajouter les TP de chimie des solutions pour les L1."],
         "avis": [{"user": "Anonyme", "note": 5, "text": "L'interface à 300F vaut largement le coup !"}],
         "remerciements": ["Merci à Bertcal pour cette initiative de génie sur le campus."]
     }
+    config = {
+        "dev_password": "admin",
+        "logo_isabee": None,
+        "logo_ubertoua": None
+    }
+    return {"db": base_sujets, "interactions": interactions, "config": config}
+
+# Chargement du Cerveau Commun
+serveur_data = initialiser_base_globale()
+
+# Initialisation des variables privées (Propres à chaque téléphone)
+if 'is_premium_user' not in st.session_state:
+    st.session_state.is_premium_user = False
+if 'dev_logged_in' not in st.session_state:
+    st.session_state.dev_logged_in = False
 
 # ==============================================================================
-# 3. BARRE LATÉRALE (LOGOS DYNAMIQUES, FILTRES, COORDONNÉES CENTRÉES BLEUES)
+# 3. BARRE LATÉRALE (LOGOS INTERACTIFS, FILTRES, SIGNATURE BLEUE CENTRÉE)
 # ==============================================================================
 with st.sidebar:
-    # Affichage des logos dynamiques (Uplodés par toi ou placeholders par défaut)
+    # Lecture des logos depuis le serveur commun
     col_l1, col_l2 = st.columns(2)
     with col_l1:
-        if st.session_state.logo_isabee is not None:
-            st.image(st.session_state.logo_isabee, use_container_width=True)
+        if serveur_data["config"]["logo_isabee"] is not None:
+            st.image(serveur_data["config"]["logo_isabee"], use_container_width=True)
         else:
             st.markdown('<div class="big-logo-box">🏛️<br>ISABEE LOGO</div>', unsafe_allow_html=True)
     with col_l2:
-        if st.session_state.logo_ubertoua is not None:
-            st.image(st.session_state.logo_ubertoua, use_container_width=True)
+        if serveur_data["config"]["logo_ubertoua"] is not None:
+            st.image(serveur_data["config"]["logo_ubertoua"], use_container_width=True)
         else:
             st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
             
     st.markdown("### 🔑 ACCÈS COMPTE")
     user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
 
-    # Système Premium de base
+    # Système Premium local à chaque étudiant
     if not st.session_state.is_premium_user:
         activation_key = st.text_input("Saisir la clé Premium (300F) :", type="password")
         if st.button("Activer Premium"):
@@ -227,7 +236,7 @@ with st.sidebar:
     f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
     f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
 
-    # Informations de contact centrées et stylisées en bleu
+    # Informations de contact impeccablement centrées et bleues
     st.markdown(f"""
         <div class="sidebar-blue-footer">
             Développé par: <b>Chemta Caleb Bertrand</b><br>
@@ -241,7 +250,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE ET PAGE PREMIÈRE (PUBLIC)
+# 4. EN-TÊTE PRINCIPAL PUBLIC (SIGNE BERTCAL)
 # ==============================================================================
 st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
 st.markdown("<p class='glow-subtitle'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
@@ -253,14 +262,14 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Filtrage global pour l'affichage
-df_view = st.session_state.db.copy()
+# Application des filtres de recherche sur la base globale
+df_view = serveur_data["db"].copy()
 if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
 if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
 if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ==============================================================================
-# 5. ARCHITECTURE DES ENGINS SÉPARÉS (PUBLIC VS DEVELOPPEUR)
+# 5. ONGLETS DE SÉPARATION (PUBLIC VS ADMINISTRATEUR)
 # ==============================================================================
 tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
     "📂 ARCHIVES ACADÉMIQUES", 
@@ -269,7 +278,7 @@ tab_public_content, tab_public_interact, tab_dev_zone = st.tabs([
 ])
 
 # ------------------------------------------------------------------------------
-# PARTIE 1 : INTERFACE UTILISATEUR PUBLIC
+# PARTIE UTILISATEURS GENERAUX
 # ------------------------------------------------------------------------------
 with tab_public_content:
     st.markdown("### 🔍 Rechercher une archive")
@@ -307,11 +316,11 @@ with tab_public_content:
                     st.button("🔒 Débloquer le corrigé (300F requis)", key=f"l_{row['id']}", disabled=True)
                 else:
                     if st.button(f"📥 Télécharger le PDF", key=f"d_{row['id']}"):
-                        st.session_state.db.loc[st.session_state.db['id'] == row['id'], 'Downloads'] += 1
+                        serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Downloads'] += 1
                         st.success("Téléchargement lancé !")
             with c2:
                 if st.button("⭐ Garder en Favori", key=f"f_{row['id']}"):
-                    st.session_state.db.loc[st.session_state.db['id'] == row['id'], 'Favori'] = True
+                    serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
                     st.toast("Ajouté aux favoris privés !")
 
 with tab_public_interact:
@@ -320,38 +329,36 @@ with tab_public_interact:
     
     with col_comm:
         st.subheader("💬 Commentaires")
-        for c in st.session_state.interactions["commentaires"]:
+        for c in serveur_data["interactions"]["commentaires"]:
             st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:8px;'>💬 {c}</div>", unsafe_allow_html=True)
         
-        # Formulaire dédié pour assurer la transmission immédiate
         with st.form("new_comment_form", clear_on_submit=True):
             txt_c = st.text_input("Laisser un commentaire :")
             if st.form_submit_button("Envoyer le commentaire") and txt_c:
-                st.session_state.interactions["commentaires"].append(txt_c)
+                serveur_data["interactions"]["commentaires"].append(txt_c)
                 st.rerun()
 
     with col_sug:
         st.subheader("💡 Suggestions")
-        for s in st.session_state.interactions["suggestions"]:
+        for s in serveur_data["interactions"]["suggestions"]:
             st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:8px;'>💡 {s}</div>", unsafe_allow_html=True)
             
         with st.form("new_sug_form", clear_on_submit=True):
             txt_s = st.text_input("Proposer un document ou une idée :")
             if st.form_submit_button("Soumettre la suggestion") and txt_s:
-                st.session_state.interactions["suggestions"].append(txt_s)
+                serveur_data["interactions"]["suggestions"].append(txt_s)
                 st.rerun()
 
 # ------------------------------------------------------------------------------
-# PARTIE 2 : ZONE DÉVELOPPEUR VERROUILLÉE ET CONFIGURABLE
+# PARTIE ADMINISTRATEUR PRIVE
 # ------------------------------------------------------------------------------
 with tab_dev_zone:
     st.markdown("### 🔐 Espace de Gestion Privé (Bertcal)")
     
-    # Vérification sécurisée du mot de passe
     if not st.session_state.dev_logged_in:
         input_pwd = st.text_input("Entrez le mot de passe Développeur :", type="password")
         if st.button("Déverrouiller les accès"):
-            if input_pwd == st.session_state.dev_password:
+            if input_pwd == serveur_data["config"]["dev_password"]:
                 st.session_state.dev_logged_in = True
                 st.success("Authentification réussie !")
                 st.rerun()
@@ -363,7 +370,6 @@ with tab_dev_zone:
             st.rerun()
             
         st.markdown("---")
-        # Sous-onglets de gestion interne sécurisés
         sub_tab_upload, sub_tab_fav, sub_tab_control, sub_tab_thanks, sub_tab_config = st.tabs([
             "🚀 DÉPÔT ÉLITE", 
             "⭐ MES FAVORIS", 
@@ -387,14 +393,15 @@ with tab_dev_zone:
                 
                 if st.form_submit_button("PUBLIER LE DOCUMENT"):
                     if u_mat and u_file:
-                        new_row = {"id": len(st.session_state.db) + 1, "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), "Favori": False}
-                        st.session_state.db = pd.concat([st.session_state.db, pd.DataFrame([new_row])], ignore_index=True)
-                        st.success("Publié avec succès !")
+                        new_row = {"id": len(serveur_data["db"]) + 1, "Cycle": u_cyc, "Filière": u_fil, "Niveau": u_niv, "Matière": u_mat, "Enseignant": u_prof, "Type": u_type, "Année": "2025-2026", "Premium": u_prem, "Downloads": 0, "Date": datetime.today().strftime('%d/%m/%Y'), "Favori": False}
+                        serveur_data["db"] = pd.concat([serveur_data["db"], pd.DataFrame([new_row])], ignore_index=True)
+                        st.success("Publié sur toutes les machines !")
+                        st.rerun()
         
         # 2. MES FAVORIS
         with sub_tab_fav:
-            st.markdown("#### Tes favoris de révision sélectionnés")
-            df_fav = st.session_state.db[st.session_state.db['Favori'] == True]
+            st.markdown("#### Tes favoris enregistrés")
+            df_fav = serveur_data["db"][serveur_data["db"]['Favori'] == True]
             if df_fav.empty:
                 st.info("Aucun favori enregistré.")
             else:
@@ -403,52 +410,50 @@ with tab_dev_zone:
         
         # 3. PANNEAU DE CONTRÔLE
         with sub_tab_control:
-            st.markdown("#### Gestion Globale de la Base de Données")
-            st.dataframe(st.session_state.db[['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
+            st.markdown("#### Gestion Globale en Temps Réel")
+            st.dataframe(serveur_data["db"][['Matière', 'Niveau', 'Downloads', 'Premium']], use_container_width=True)
             
-            for idx, row in st.session_state.db.iterrows():
+            for idx, row in serveur_data["db"].iterrows():
                 col_n, col_b = st.columns([4, 1])
                 col_n.write(f"🗑️ {row['Matière']} ({row['Niveau']})")
                 if col_b.button("Supprimer", key=f"del_{row['id']}"):
-                    st.session_state.db = st.session_state.db[st.session_state.db['id'] != row['id']]
+                    serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
                     st.rerun()
                     
-        # 4. RECONNAISSANCE (AVIS ET REMERCIEMENTS)
+        # 4. RECONNAISSANCE 
         with sub_tab_thanks:
             col_av, col_rem = st.columns(2)
             with col_av:
-                st.write("#### ⭐ Avis sur l'interface (300F)")
-                for a in st.session_state.interactions["avis"]:
+                st.write("#### ⭐ Évaluations Reçues")
+                for a in serveur_data["interactions"]["avis"]:
                     st.markdown(f"**{a['user']}** ({a['note']}★) : _{a['text']}_")
             with col_rem:
-                st.write("#### 🙏 Mots de gratitude")
-                for r in st.session_state.interactions["remerciements"]:
+                st.write("#### 🙏 Mots de gratitude reçus")
+                for r in serveur_data["interactions"]["remerciements"]:
                     st.write(f"• {r}")
                     
-        # 5. CONFIGURATION DU MOT DE PASSE ET DES LOGOS (CADRES BIEN DÉFINIS)
+        # 5. CONFIGURATION
         with sub_tab_config:
-            st.markdown("#### 🛠️ Ajustements Techniques Globaux")
+            st.markdown("#### 🛠️ Paramètres du Système Principal")
             
-            # Module de configuration de mot de passe
-            new_pwd = st.text_input("Modifier le mot de passe Admin/Développeur :", value=st.session_state.dev_password, type="password")
+            new_pwd = st.text_input("Modifier le mot de passe Admin Global :", value=serveur_data["config"]["dev_password"], type="password")
             if st.button("Enregistrer le nouveau mot de passe"):
-                st.session_state.dev_password = new_pwd
-                st.success("Mot de passe modifié avec succès !")
+                serveur_data["config"]["dev_password"] = new_pwd
+                st.success("Le nouveau code d'accès administrateur est opérationnel !")
             
             st.markdown("---")
-            st.markdown("#### 🖼️ Téléversement des Logos Officiels")
-            st.info("Charge tes logos ici pour mettre à jour les visuels de la barre latérale.")
+            st.markdown("#### 🖼️ Cadres d'Importation des Logos")
             
-            up_isabee = st.file_uploader("Importer le Logo ISABEE (Format PNG/JPG) :", key="upload_isabee_logo")
+            up_isabee = st.file_uploader("Importer le Logo ISABEE :", key="upload_isabee_logo")
             if up_isabee is not None:
-                st.session_state.logo_isabee = up_isabee
-                st.success("Logo ISABEE enregistré !")
+                serveur_data["config"]["logo_isabee"] = up_isabee
+                st.success("Logo ISABEE enregistré au niveau central !")
                 
-            up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua (Format PNG/JPG) :", key="upload_ubertoua_logo")
+            up_ubertoua = st.file_uploader("Importer le Logo Université de Bertoua :", key="upload_ubertoua_logo")
             if up_ubertoua is not None:
-                st.session_state.logo_ubertoua = up_ubertoua
-                st.success("Logo U-BERTOUA enregistré !")
+                serveur_data["config"]["logo_ubertoua"] = up_ubertoua
+                st.success("Logo U-BERTOUA enregistré au niveau central !")
                 
             if up_isabee or up_ubertoua:
-                if st.button("Appliquer les logos sur la plateforme"):
+                if st.button("Rafraîchir pour appliquer les nouveaux visuels"):
                     st.rerun()
