@@ -288,7 +288,7 @@ with tab_public_content:
                         key=f"d_{row['id']}",
                         on_click=incrementer_compteur_telechargement,
                         args=(row['id'],)
-                    )
+                    )u
             with c2:
                 if st.button("⭐ Garder en Favori", key=f"f_{row['id']}"):
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
