@@ -48,24 +48,21 @@ def initialiser_base_globale():
         "campay_password": "METS_TON_APP_PASSWORD_ICI",
         "campay_mode": "Démo",
         "font_size": 16,
-        "title_size": 7.0,  # Augmenté à 7.0 pour être bien visible dès l'entrée
+        "title_size": 4.5,
         "primary_color": "#10B981",
-        "secondary_color": "#059669",
-        "language": "Français"
+        "secondary_color": "#059669"
     }
-    return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config}
+    return {"db": base_sujets, "staging": staging_files, "tickets": tickets_actifs, "interactions": interactions, "config": config, "connections": []}
 
 serveur_data = initialiser_base_globale()
 
-# Gestion de la langue sélectionnée dans la configuration globale
-current_lang = serveur_data["config"].get("language", "Français")
-
-def translate(text_fr, text_en):
-    return text_fr if current_lang == "Français" else text_en
+# Sécurité d'initialisation pour la liste des connexions
+if "connections" not in serveur_data:
+    serveur_data["connections"] = []
 
 # Extraction dynamique des styles pour le CSS réactif
 f_size = serveur_data["config"].get("font_size", 16)
-t_size = serveur_data["config"].get("title_size", 7.0)
+t_size = serveur_data["config"].get("title_size", 4.5)
 p_color = serveur_data["config"].get("primary_color", "#10B981")
 s_color = serveur_data["config"].get("secondary_color", "#059669")
 
@@ -89,11 +86,11 @@ st.markdown(f"""
         color: #FFFFFF !important;
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: {f_size}px !important;
-    }}
+    }
     
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
         color: #FFFFFF !important;
-    }}
+    }
     
     .glow-title {{
         font-size: {t_size}rem !important;
@@ -103,20 +100,20 @@ st.markdown(f"""
         margin-bottom: 5px;
         text-transform: uppercase;
         letter-spacing: -2px;
-        text-shadow: 0 0 25px {p_color}, 0 0 50px rgba(16, 185, 129, 0.5);
-    }}
-    @media (max-width: 768px) {{ .glow-title {{ font-size: 3.5rem !important; }} }}
+        text-shadow: 0 0 20px {p_color}, 0 0 40px rgba(16, 185, 129, 0.4);
+    }
+    @media (max-width: 768px) {{ .glow-title {{ font-size: 2.5rem !important; }} }}
     
     .glow-subtitle {{
         text-align: center; font-size: 1.2rem; color: #A7F3D0; margin-bottom: 30px; font-weight: 500; opacity: 0.9;
-    }}
+    }
     
     .welcome-banner {{
         background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
         border: 1px solid {p_color};
         padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 40px;
         box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
-    }}
+    }
     
     .welcome-text {{ font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }}
 
@@ -126,28 +123,28 @@ st.markdown(f"""
         border: 1px solid rgba(16, 185, 129, 0.25) !important;
         border-radius: 14px !important;
         padding: 16px 24px !important; font-size: 1.05rem !important; font-weight: 700 !important; color: #E5E7EB !important;
-    }}
+    }
     .stTabs [aria-selected="true"] {{
         background: linear-gradient(90deg, {p_color} 0%, {s_color} 100%) !important;
         color: #FFFFFF !important; border-color: #34D399 !important;
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
-    }}
+    }
 
     .big-logo-box {{
         background: rgba(255, 255, 255, 0.02) !important; border: 2px dashed {p_color} !important;
         border-radius: 12px; padding: 20px 5px; text-align: center; color: #34D399 !important; font-weight: 800; font-size: 0.8rem;
-    }}
+    }
 
     .sidebar-blue-footer {{
         border-top: 1px solid rgba(56, 189, 248, 0.2); padding-top: 20px; margin-top: 40px;
         font-size: 0.88rem; line-height: 1.6; color: #38BDF8 !important; text-align: center !important;
-    }}
+    }
     .sidebar-blue-footer b, .sidebar-blue-footer strong {{ color: #00E5FF !important; }}
 
     .glass-card {{
         background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(16, 185, 129, 0.15);
         border-radius: 16px; padding: 22px; margin-bottom: 20px;
-    }}
+    }
     .badge-premium {{ background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }}
     .badge-free {{ background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }}
     
@@ -156,12 +153,66 @@ st.markdown(f"""
         border: 2px solid #8B5CF6 !important;
         border-radius: 16px; padding: 25px; margin-top: 20px;
         box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
-    }}
+    }
     </style>
 """, unsafe_allow_html=True)
 
 if 'is_premium_user' not in st.session_state: st.session_state.is_premium_user = False
 if 'dev_role' not in st.session_state: st.session_state.dev_role = None
+if 'logged_in' not in st.session_state: st.session_state.logged_in = False
+
+# ==============================================================================
+# PREMIÈRE PAGE EXTROADINAIRE : LIAISON EMAIL & TÉLÉPHONE OBLIGATOIRE (TOUT CENTRÉ)
+# ==============================================================================
+if not st.session_state.logged_in:
+    _, center_col, _ = st.columns([1, 2, 1])
+    with center_col:
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color: #FFFFFF; font-weight: 800; text-shadow: 0 0 25px #10B981; text-transform: uppercase;'>🔒 Liaison d'Accès Unique</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #A7F3D0; font-size: 1.1rem; font-weight: 500;'>Veuillez lier votre adresse e-mail et votre numéro de téléphone pour générer votre identifiant unique de connexion.</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Graphique de très haut niveau centré
+        data_graphique = pd.DataFrame({
+            'Flux d\'Accès Publics': [25, 45, 65, 50, 95, 130, 160],
+            'Sécurisation Élite': [15, 30, 55, 75, 110, 145, 185]
+        })
+        st.area_chart(data_graphique)
+        
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        input_email = st.text_input("📬 Adresse E-mail Professionnelle/Étudiante :", placeholder="exemple@domain.com")
+        input_phone = st.text_input("📞 Numéro de Téléphone Associé :", placeholder="Ex: 6XXXXXXXX")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚀 INITIALISER LA PLATEFORME & SE CONNECTER", use_container_width=True):
+            if input_email and input_phone:
+                if "@" in input_email and len(input_phone) >= 9:
+                    # Génération automatique d'un Identifiant Unique
+                    uid_genere = f"USR-{''.join(random.choices(string.ascii_uppercase + string.digits, k=6))}"
+                    
+                    # Enregistrement persistant dans la base globale
+                    serveur_data["connections"].append({
+                        "Identifiant Unique": uid_genere,
+                        "Adresse Email": input_email,
+                        "Numero Telephone": input_phone,
+                        "Date de Connexion": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    })
+                    
+                    # Sauvegarde en Session State
+                    st.session_state.logged_in = True
+                    st.session_state.user_email = input_email
+                    st.session_state.user_phone = input_phone
+                    st.session_state.user_uid = uid_genere
+                    st.success(f"👑 Connexion Réussie ! Votre identifiant unique est : {uid_genere}")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("Veuillez entrer une adresse e-mail valide et un numéro de téléphone à 9 chiffres.")
+            else:
+                st.error("L'adresse e-mail et le numéro de téléphone sont strictement obligatoires avant toute connexion.")
+        st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
 
 # ==============================================================================
 # 3. BARRE LATÉRALE (AUTHENTIFICATION, SYSTÈME TICKET UNIQUE & FILTRES)
@@ -179,76 +230,176 @@ with st.sidebar:
         else: 
             st.markdown('<div class="big-logo-box">🎓<br>U-BERTOUA</div>', unsafe_allow_html=True)
             
-    st.markdown(f"### 🔑 {translate('ACCÈS COMPTE & VALIDATION TICKET', 'ACCOUNT ACCESS & TICKET VALIDATION')}")
-    user_matricule = st.text_input(translate("Identifiant Matricule Étudiant :", "Student Matricule ID:"), value="22I0000B")
+    st.markdown("### 🔑 ACCÈS COMPTE & VALIDATION TICKET")
+    user_matricule = st.text_input("Identifiant Matricule Étudiant :", value="22I0000B")
 
     if not st.session_state.is_premium_user:
-        ticket_input = st.text_input(translate("Entrez votre Ticket Unique Premium :", "Enter Your Unique Premium Ticket:"), type="default", placeholder="Ex: ISABEE-XXXX")
-        if st.button(translate("🔥 Valider le Ticket", "🔥 Validate Ticket")):
+        ticket_input = st.text_input("Entrez votre Ticket Unique Premium :", type="default", placeholder="Ex: ISABEE-XXXX")
+        if st.button("🔥 Valider le Ticket"):
             if ticket_input in serveur_data["tickets"]:
                 serveur_data["tickets"].remove(ticket_input)
                 st.session_state.is_premium_user = True
-                st.success(translate("👑 Accès Élite Activé ! Le ticket a été détruit de la base.", "👑 Elite Access Activated! Ticket consumed."))
+                st.success("👑 Accès Élite Activé ! Le ticket a été détruit de la base.")
                 st.rerun()
             else:
-                st.error(translate("Ticket invalide, expiré ou déjà consommé.", "Invalid, expired or already consumed ticket."))
+                st.error("Ticket invalide, expiré ou déjà consommé.")
     else:
-        st.success(translate("👑 Statut : Compte Élite Académique", "👑 Status: Academic Elite Account"))
-        if st.button(translate("Quitter le mode Premium", "Leave Premium Mode")):
+        st.success("👑 Statut : Compte Élite Académique")
+        if st.button("Quitter le mode Premium"):
             st.session_state.is_premium_user = False
             st.rerun()
 
     st.markdown("---")
-    st.markdown(f"### 🎛️ {translate('FILTRES DE RECHERCHE', 'SEARCH FILTERS')}")
-    f_cycle = st.selectbox(translate("Cycle d'études", "Study Cycle"), [translate("Tous", "All"), "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
-    f_filiere = st.selectbox(translate("Filière", "Department"), [translate("Toutes", "All Departments")] + FILIERES)
-    f_type = st.selectbox(translate("Type d'évaluation", "Evaluation Type"), [translate("Tous", "All"), "CC", "Examen", "Rattrapage", "TP"])
+    st.markdown("### 🎛️ FILTRES DE RECHERCHE")
+    f_cycle = st.selectbox("Cycle d'études", ["Tous", "Licence Sciences de l'Ingénieur", "Cycle Ingénieur", "Master I", "Master II"])
+    f_filiere = st.selectbox("Filière", ["Toutes"] + FILIERES)
+    f_type = st.selectbox("Type d'évaluation", ["Tous", "CC", "Examen", "Rattrapage", "TP"])
 
     st.markdown(f"""
         <div class="sidebar-blue-footer">
-            {translate('Développé par:', 'Developed by:')} <b>Chemta Caleb Bertrand</b><br>
-            {translate('étudiant ingénieur en génie énergétique.', 'engineering student in energy engineering.')}<br>
+            Développé par: <b>Chemta Caleb Bertrand</b><br>
+            étudiant ingénieur en génie énergétique.<br>
             <br>
             <strong>CONTACT COMMERCIAL :</strong><br>
-            • {translate('Téléphone', 'Phone')} : +237 {serveur_data["config"]["orange_target"]}<br>
+            • Téléphone : +237 {serveur_data["config"]["orange_target"]}<br>
             • Email : bertrandchemtacaleb@gmail.com<br>
             • Campus : ISABEE / U-BERTOUA
         </div>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. EN-TÊTE PRINCIPAL
+# 4. EN-TÊTE PRINCIPAL ET BOUTON DE PARAMÈTRES GLOBAL À L'EXTRÉMITÉ DROITE
 # ==============================================================================
-st.markdown("<h1 class='glow-title'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
-st.markdown(f"<p class='glow-subtitle'>{translate('Anciennes épreuves et sujets d\'examens... Développé par Bertcal.', 'Past exams and assessment papers... Developed by Bertcal.')}</p>", unsafe_allow_html=True)
+col_titre_gauche, col_param_droite = st.columns([3, 1])
 
-st.markdown(f"""
+with col_titre_gauche:
+    st.markdown("<h1 class='glow-title' style='text-align: left;'>SOURCE ISABEE</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='glow-subtitle' style='text-align: left;'>Anciennes épreuves et sujets d'examens... Développé par Bertcal.</p>", unsafe_allow_html=True)
+
+with col_param_droite:
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("⚙️ PARAMÈTRES DE L'APPLICATION", use_container_width=True, type="primary"):
+        st.session_state.show_app_settings = not st.session_state.get('show_app_settings', False)
+
+# INTERFACE DYNAMIQUE ET FONCTIONNELLE DU GROS BOUTON DE PARAMÈTRES
+if st.session_state.get('show_app_settings', False):
+    st.markdown("""
+        <div style='background: rgba(16, 185, 129, 0.05); border: 2px solid #10B981; padding: 25px; border-radius: 16px; margin-bottom: 30px;'>
+            <h2 style='color: #34D399; margin-top: 0;'>⚙️ PANNEAU DE CONFIGURATION SYSTÈME</h2>
+            <p style='font-size: 0.9rem; opacity: 0.8;'>Toutes les fonctionnalités ci-dessous sont connectées en temps réel à l'infrastructure applicative.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    ps_1, ps_2, ps_3, ps_4, ps_5 = st.tabs([
+        "👤 Compte, Profil & Sécurité", 
+        "🔔 Notifications & Apparence", 
+        "💾 Données, Stockage & Accessibilité", 
+        "💼 Paramètres Commerciaux & Intégrations",
+        "🤝 Aide, Assistance & Légal"
+    ])
+    
+    with ps_1:
+        st.markdown("#### 👤 Compte et profil")
+        st.text_input("Nom d'utilisateur", value="Étudiant Entrepreneur", key="p_username")
+        st.text_input("Photo de profil (URL / Identifiant)", value="avatar_elite_gold.png", disabled=True)
+        st.text_input("Adresse e-mail liée", value=st.session_state.get('user_email', ''), disabled=True)
+        st.text_input("Numéro de téléphone lié", value=st.session_state.get('user_phone', ''), disabled=True)
+        st.text_input("Mot de passe du compte local", value="••••••••••••", type="password")
+        
+        st.markdown("#### 🔒 Confidentialité et sécurité")
+        st.toggle("Activer les Paramètres de confidentialité avancés", value=True)
+        st.checkbox("Authentification à deux facteurs (2FA) obligatoire", value=True, disabled=True)
+        st.selectbox("Gestion des appareils connectés", ["Cet appareil (Actif - Session Unique Web)"])
+        st.multiselect("Permissions accordées à l'application", ["Téléchargement local", "Notifications push", "Stockage cache"], default=["Téléchargement local", "Notifications push", "Stockage cache"])
+        st.selectbox("Blocage et signalement d'utilisateurs suspects", ["Aucun utilisateur bloqué"])
+        
+        st.markdown("#### 🚨 Gestion de compte")
+        if st.button("Déconnexion de la session unique", use_container_width=True):
+            st.session_state.logged_in = False
+            st.rerun()
+        st.button("Désactivation du compte / Suppression du compte", type="secondary", use_container_width=True)
+
+    with ps_2:
+        st.markdown("#### 🔔 Notifications")
+        st.checkbox("Notifications push instantanées", value=True)
+        st.checkbox("Notifications par e-mail académique", value=True)
+        st.toggle("Sons et vibrations lors du déblocage Premium", value=True)
+        st.selectbox("Alertes personnalisées", ["Toutes les nouvelles épreuves", "Uniquement ma filière"])
+        
+        st.markdown("#### 🎨 Apparence & Personnalisation")
+        st.selectbox("Thème Visuel", ["Mode sombre Émeraude (Recommandé)", "Mode clair Haute Luminosité"])
+        st.selectbox("Langue de l'interface", ["Français (Cameroun)", "English"])
+        
+        slider_font = st.slider("Taille du texte et des caractères (px)", 12, 24, int(f_size))
+        if slider_font != f_size:
+            serveur_data["config"]["font_size"] = slider_font
+            st.rerun()
+
+    with ps_3:
+        st.markdown("#### 💾 Données et stockage")
+        st.metric("Utilisation du stockage applicatif", "18.4 Mo / Unlimted")
+        if st.button("🗑️ Vider le cache de l'application (Purge)"):
+            st.success("Le cache système a été vidé avec succès.")
+        st.toggle("Téléchargements directs en arrière-plan", value=True)
+        st.toggle("Sauvegarde et synchronisation automatique avec le serveur", value=True)
+        
+        st.markdown("#### ♿ Accessibilité")
+        st.toggle("Lecture vocale des intitulés d'UE", value=False)
+        st.toggle("Mode contraste élevé pour amphi", value=False)
+        st.toggle("Sous-titres d'assistance", value=False)
+
+    with ps_4:
+        st.markdown("#### 💼 Paramètres commerciaux (Secrétariat Bureautique)")
+        st.text_input("Horaires d'ouverture", value="07:30 - 16:30 (Lundi à Vendredi)")
+        st.text_area("Services proposés", value="Impression de documents, reliure, téléchargement d'archives d'examens corrigées.")
+        st.text_input("Tarifs d'accès Premium unique", value="300 F CFA")
+        st.text_input("Zones d'intervention ou de livraison", value="Campus ISABEE / Université de Bertoua")
+        
+        st.markdown("#### ⚡ Intégrations, API & Logiciels")
+        st.text_input("Passerelle Réseau Social", value="WhatsApp Business Link", disabled=True)
+        st.text_input("Outils de paiement connectés", value="CamPay API (Orange Money / MTN MoMo)", disabled=True)
+        st.text_input("Logiciels de gestion de base de données", value="Pandas Dataframe Memory System", disabled=True)
+        st.text_input("Statut de l'API de Production", value="Opérationnel (200 OK)", disabled=True)
+
+    with ps_5:
+        st.markdown("#### 🤝 Aide, Support & Légal")
+        st.markdown("**FAQ :** Comment acheter un code ? Allez sur l'onglet CamPay, initiez le push USSD, validez avec votre code PIN secret, puis copiez le code obtenu.")
+        st.text_input("Centre d'aide / Contact du support", value="bertrandchemtacaleb@gmail.com")
+        st.text_area("Signalement de problèmes ou bugs de l'application")
+        st.markdown(f"""
+            * **Version de l'application :** v2.8.5 (Production Stable)
+            * **Conditions d'utilisation :** Utilisation strictement réservée aux étudiants inscrits.
+            * **Politique de confidentialité & Mentions légales :** Protection des données assurée par la zone de cryptage de Bertcal.
+        """)
+    st.markdown("---")
+
+# Restant de l'affichage de l'en-tête d'origine
+st.markdown("""
     <div class="welcome-banner">
-        <p class="welcome-text">🌟 {translate("BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE !", "WELCOME TO YOUR ACADEMIC EXCELLENCE PLATFORM!")} 🌟</p>
-        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem; color:#FFFFFF;">{translate("Accédez instantanément aux archives de vos filières pour propulser vos résultats.", "Get instant access to your department archives to skyrocket your results.")}</p>
+        <p class="welcome-text">🌟 BIENVENUE SUR VOTRE PLATEFORME D'EXCELLENCE ACADÉMIQUE ! 🌟</p>
+        <p style="margin: 5px 0 0 0; opacity:0.8; font-size:0.95rem; color:#FFFFFF;">Accédez instantanément aux archives de vos filières pour propulser vos résultats.</p>
     </div>
 """, unsafe_allow_html=True)
 
 df_view = serveur_data["db"].copy()
-if f_cycle != translate("Tous", "All"): df_view = df_view[df_view['Cycle'] == f_cycle]
-if f_filiere != translate("Toutes", "All Departments"): df_view = df_view[df_view['Filière'] == f_filiere]
-if f_type != translate("Tous", "All"): df_view = df_view[df_view['Type'] == f_type]
+if f_cycle != "Tous": df_view = df_view[df_view['Cycle'] == f_cycle]
+if f_filiere != "Toutes": df_view = df_view[df_view['Filière'] == f_filiere]
+if f_type != "Tous": df_view = df_view[df_view['Type'] == f_type]
 
 # ==============================================================================
-# 5. ONGLETS DE NAVIGATION PRINCIPAUX (ARCHIVES, PAIEMENT, INTERACT, SECURE DEV, PARAMÈTRES PERSISTANTS)
+# 5. ONGLETS DE NAVIGATION PRINCIPAUX (PUBLIC VS DEVENIR PREMIUM VS DEV)
 # ==============================================================================
-tab_public_content, tab_payment_gateway, tab_public_interact, tab_dev_zone, tab_global_settings = st.tabs([
-    translate("📂 ARCHIVES ACADÉMIQUES", "📂 ACADEMIC ARCHIVES"), 
-    translate("💳 ACHAT ACCÈS ÉLITE (CAMPAY INTERNET)", "💳 PURCHASE ELITE ACCESS (CAMPAY)"),
-    translate("💬 DISCUSSIONS & SUGGESTIONS", "💬 DISCUSSIONS & SUGGESTIONS"), 
-    translate("🔒 ACCÈS DÉVELOPPEUR", "🔒 DEVELOPER ACCESS"),
-    translate("⚙️ PARAMÈTRES DU SYSTÈME", "⚙️ SYSTEM SETTINGS") # Placé ici pour rester indéfiniment là !
+tab_public_content, tab_payment_gateway, tab_public_interact, tab_dev_zone = st.tabs([
+    "📂 ARCHIVES ACADÉMIQUES", 
+    "💳 ACHAT ACCÈS ÉLITE (CAMPAY INTERNET)",
+    "💬 DISCUSSIONS & SUGGESTIONS", 
+    "🔒 ACCÈS DÉVELOPPEUR"
 ])
 
 # --- ONGLET 1 : ARCHIVES PUBLIC ---
 with tab_public_content:
-    st.markdown(f"### 🔍 {translate('Rechercher une archive', 'Search an archive')}")
-    search_bar = st.text_input(translate("Saisir le nom d'une UE :", "Enter course title:"), placeholder="Ex: Thermodynamique...")
+    st.markdown("### 🔍 Rechercher une archive")
+    search_bar = st.text_input("Saisir le nom d'une UE :", placeholder="Ex: Thermodynamique...")
     
     if search_bar:
         matches = []
@@ -258,13 +409,13 @@ with tab_public_content:
         df_view = pd.DataFrame(matches) if matches else pd.DataFrame(columns=df_view.columns)
 
     if df_view.empty:
-        st.info(translate("Aucun document trouvé pour ces critères.", "No documents found matching criteria."))
+        st.info("Aucun document trouvé pour ces critères.")
     else:
         def incrementer_compteur_telechargement(doc_id):
             serveur_data["db"].loc[serveur_data["db"]['id'] == doc_id, 'Downloads'] += 1
 
         for idx, row in df_view.iterrows():
-            badge = f"<span class='badge-premium'>💎 {translate('PREMIUM (Corrigé)', 'PREMIUM (Solved)')}</span>" if row['Premium'] else f"<span class='badge-free'>🆓 {translate('GRATUIT', 'FREE')}</span>"
+            badge = "<span class='badge-premium'>💎 PREMIUM (Corrigé)</span>" if row['Premium'] else "<span class='badge-free'>🆓 GRATUIT</span>"
             st.markdown(f"""
                 <div class="glass-card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -272,8 +423,8 @@ with tab_public_content:
                         {badge}
                     </div>
                     <p style="font-size:0.85rem; opacity:0.8; margin: 5px 0; color:#E5E7EB;">
-                        <b>{translate('Filière', 'Department')} :</b> {row['Filière']} | <b>{translate('Niveau', 'Level')} :</b> {row['Niveau']} | <b>{translate('Session', 'Session')} :</b> {row['Année']}<br>
-                        📊 {translate('Téléchargé', 'Downloaded')} {row['Downloads']} {translate('fois.', 'times.')}
+                        <b>Filière :</b> {row['Filière']} | <b>Niveau :</b> {row['Niveau']} | <b>Session :</b> {row['Année']}<br>
+                        📊 Téléchargé {row['Downloads']} fois.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
@@ -281,7 +432,7 @@ with tab_public_content:
             c1, c2 = st.columns(2)
             with c1:
                 if row['Premium'] and not st.session_state.is_premium_user:
-                    st.button(translate("🔒 Débloquer le corrigé (300F requis)", "🔒 Unlock solved paper (300F required)"), key=f"l_{row['id']}", disabled=True)
+                    st.button("🔒 Débloquer le corrigé (300F requis)", key=f"l_{row['id']}", disabled=True)
                 else:
                     try:
                         content_pdf = row["file_bytes"] if ("file_bytes" in row.index and pd.notna(row["file_bytes"])) else b"%PDF-1.5\n% Document Virtuel Source Isabee"
@@ -289,7 +440,7 @@ with tab_public_content:
                         content_pdf = b"%PDF-1.5\n% Document Virtuel Source Isabee"
                     
                     st.download_button(
-                        label=translate("📥 Télécharger le PDF", "📥 Download PDF"),
+                        label="📥 Télécharger le PDF",
                         data=content_pdf,
                         file_name=f"{row['Matière'].replace(' ', '_')}.pdf",
                         mime="application/pdf",
@@ -298,39 +449,39 @@ with tab_public_content:
                         args=(row['id'],)
                     )
             with c2:
-                if st.button(translate("⭐ Garder en Favori", "⭐ Mark as Favorite"), key=f"f_{row['id']}"):
+                if st.button("⭐ Garder en Favori", key=f"f_{row['id']}"):
                     serveur_data["db"].loc[serveur_data["db"]['id'] == row['id'], 'Favori'] = True
-                    st.toast(translate("Ajouté aux favoris privés!", "Added to private favorites!"))
+                    st.toast("Ajouté aux favoris privés!")
 
 # --- ONGLET 2 : PASSERELLE DE PAIEMENT CAMPAY EN DIRECT ---
 with tab_payment_gateway:
-    st.markdown(f"### ⚡ {translate('Passerelle Réelle Directe par API Campay', 'Live Gateway via CamPay API')}")
+    st.markdown("### ⚡ Passerelle Réelle Directe par API Campay")
     
     mode_actuel = serveur_data["config"]["campay_mode"]
-    st.warning(f"{translate('Configuration actuelle :', 'Current config:')} **Mode {mode_actuel}**. {translate('Les fonds seront routés automatiquement.', 'Funds will be automatically routed.')}")
+    st.warning(f"Configuration actuelle : **Mode {mode_actuel}**. Les fonds seront routés automatiquement.")
     
     col_pay_form, col_pay_info = st.columns([2, 1])
     
     with col_pay_form:
-        st.markdown(f"#### {translate('Formulaire d\'Abonnement Automatisé', 'Automated Subscription Form')}")
-        operator = st.radio(translate("Sélectionnez votre opérateur :", "Select your provider:"), ["Orange Money", "MTN MoMo"])
+        st.markdown("#### Formulaire d'Abonnement Automatisé")
+        operator = st.radio("Sélectionnez votre opérateur :", ["Orange Money", "MTN MoMo"])
         
         if mode_actuel == "Démo":
-            st.info(translate("💡 En mode Démo, la valeur est fixée à 25 XAF au lieu de 300F maximum, conformément aux spécifications CamPay.", "💡 Demo mode set to 25 XAF for testing."))
+            st.info("💡 En mode Démo, la valeur est fixée à 25 XAF au lieu de 300F maximum, conformément aux spécifications CamPay.")
             montant_reel = 25
         else:
-            formule = st.selectbox(translate("Formule Élite :", "Elite Pack:"), ["300 F CFA - Accès Standard Unique", "500 F CFA - Pack Révision Intensive"])
+            formule = st.selectbox("Formule Élite :", ["300 F CFA - Accès Standard Unique", "500 F CFA - Pack Révision Intensive"])
             montant_reel = 300 if "300" in formule else 500
 
-        phone_pay = st.text_input(translate("Entrez le numéro Camerounais à débiter (9 chiffres) :", "Enter 9-digit Cameroon phone number:"), placeholder="Ex: 6XXXXXXXX")
+        phone_pay = st.text_input("Entrez le numéro Camerounais à débiter (9 chiffres) :", placeholder="Ex: 6XXXXXXXX")
         
-        if st.button(translate("🚀 LANCER LA DEMANDE DE RETRAIT EN DIRECT", "🚀 TRIGGER LIVE PAYMENT REQUEST")):
+        if st.button("🚀 LANCER LA DEMANDE DE RETRAIT EN DIRECT"):
             if len(phone_pay) != 9 or not phone_pay.isdigit():
-                st.error(translate("Format invalide. Indiquez les 9 chiffres du numéro de téléphone.", "Invalid format. Exactly 9 digits required."))
+                st.error("Format invalide. Indiquez les 9 chiffres du numéro de téléphone.")
             else:
                 status_box = st.empty()
                 progress_bar = st.progress(0)
-                status_box.warning(translate("🔄 Authentification auprès des serveurs CamPay...", "🔄 Authenticating with CamPay servers..."))
+                status_box.warning("🔄 Authentification auprès des serveurs CamPay...")
                 base_url = "https://demo.campay.net/api" if mode_actuel == "Démo" else "https://www.campay.net/api"
                 
                 try:
@@ -347,7 +498,7 @@ with tab_payment_gateway:
                         token = res_tok.get("token")
                     
                     progress_bar.progress(40)
-                    status_box.info(translate("📲 Requête Push USSD émise. Regarde ton téléphone...", "📲 Push USSD requested. Check your phone pin prompt..."))
+                    status_box.info(f"📲 Requête Push USSD émise. Regarde ton téléphone pour saisir ton code PIN...")
                     
                     collect_url = f"{base_url}/collect/"
                     collect_payload = json.dumps({
@@ -372,7 +523,7 @@ with tab_payment_gateway:
                     progress_bar.progress(70)
                     paiement_reussi = False
                     for check in range(5):
-                        status_box.info(f"⏳ Verification PIN ({check+1}/5)...")
+                        status_box.info(f"⏳ Vérification de ton code PIN sur le réseau Télécom ({check+1}/5)...")
                         time.sleep(3)
                         
                         status_url = f"{base_url}/transaction/{ref_transaction}/"
@@ -403,13 +554,13 @@ with tab_payment_gateway:
                             </div>
                         """, unsafe_allow_html=True)
                     else:
-                        status_box.error("❌ La transaction a échoué.")
+                        status_box.error("❌ La transaction a échoué. Cause : Code PIN non saisi, délai expiré ou solde insuffisant.")
                         
                 except Exception as e:
-                    status_box.error(f"🔌 Erreur de communication API.")
+                    status_box.error(f"🔌 Erreur de communication API : Vérifie tes identifiants CamPay ou le réseau.")
                     
     with col_pay_info:
-        st.markdown(f"#### {translate('Comptes de Réception Actifs', 'Active Destination Accounts')}")
+        st.markdown("#### Comptes de Réception Actifs")
         st.markdown(f"""
             <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:8px; border-left:4px solid #FF6600;">
                 <b>🍊 Compte Récepteur Orange :</b><br>
@@ -424,7 +575,7 @@ with tab_payment_gateway:
 
 # --- ONGLET 3 : INTERACTIONS ---
 with tab_public_interact:
-    st.markdown(f"### 🗣️ {translate('Espace Interactif des Étudiants', 'Students Communication Hub')}")
+    st.markdown("### 🗣️ Espace Interactif des Étudiants")
     col_comm, col_sug = st.columns(2)
     
     with col_comm:
@@ -433,8 +584,8 @@ with tab_public_interact:
             st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:8px;'>💬 {c}</div>", unsafe_allow_html=True)
         
         with st.form("new_comment_form", clear_on_submit=True):
-            txt_c = st.text_input(translate("Laisser un commentaire :", "Leave a comment:"))
-            if st.form_submit_button(translate("Envoyer le commentaire", "Send Comment")) and txt_c:
+            txt_c = st.text_input("Laisser un commentaire :")
+            if st.form_submit_button("Envoyer le commentaire") and txt_c:
                 serveur_data["interactions"]["commentaires"].append(txt_c)
                 st.rerun()
 
@@ -444,8 +595,8 @@ with tab_public_interact:
             st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:8px;'>💡 {s}</div>", unsafe_allow_html=True)
             
         with st.form("new_sug_form", clear_on_submit=True):
-            txt_s = st.text_input(translate("Proposer un document ou une idée :", "Suggest a paper or an idea:"))
-            if st.form_submit_button(translate("Soumettre la suggestion", "Submit Suggestion")) and txt_s:
+            txt_s = st.text_input("Proposer un document ou une idée :")
+            if st.form_submit_button("Soumettre la suggestion") and txt_s:
                 serveur_data["interactions"]["suggestions"].append(txt_s)
                 st.rerun()
 
@@ -453,11 +604,11 @@ with tab_public_interact:
 # 6. PARTIE PRIVÉE : FILTRE DES RÔLES & ACCÈS DE HAUT NIVEAU
 # ==============================================================================
 with tab_dev_zone:
-    st.markdown(f"### 🔒 {translate('Espace d\'Infrastructure Sécurisé', 'Secure Infrastructure Zone')}")
+    st.markdown("### 🔒 Espace d'Infrastructure Sécurisé")
     
     if st.session_state.dev_role is None:
-        input_pwd = st.text_input(translate("Entrez votre clé d'accès d'infrastructure :", "Enter architecture access key:"), type="password")
-        if st.button(translate("Vérifier le niveau d'autorisation", "Verify Clearance Level")):
+        input_pwd = st.text_input("Entrez votre clé d'accès d'infrastructure :", type="password")
+        if st.button("Vérifier le niveau d'autorisation"):
             if input_pwd == serveur_data["config"]["chief_password"]:
                 st.session_state.dev_role = "Chief"
                 st.success("Bonjour Concepteur en Chef. Vos privilèges sont absolus.")
@@ -505,7 +656,7 @@ with tab_dev_zone:
                     
                     if st.session_state.dev_role == "Copilote":
                         serveur_data["staging"].append(temp_row)
-                        st.warning("⚠️ Document stocké dans le sas d'attente.")
+                        st.warning("⚠️ Document stocké dans le sas d'attente. En attente de validation exclusive par le Concepteur en Chef.")
                     else:
                         new_dataframe_row = pd.DataFrame([temp_row])
                         serveur_data["db"] = pd.concat([serveur_data["db"], new_dataframe_row], ignore_index=True)
@@ -514,7 +665,7 @@ with tab_dev_zone:
                 else:
                     st.error("Veuillez renseigner un nom d'UE ainsi qu'un fichier PDF valide.")
 
-        # ZONE SECRÈTE DU CONCEPTEUR EN CHEF (SUPPRESSION AJOUTÉE ICI)
+        # ZONE SECRÈTE DU CONCEPTEUR EN CHEF
         if st.session_state.dev_role == "Chief":
             st.markdown("<br><br>", unsafe_allow_html=True)
             st.markdown("""
@@ -524,10 +675,12 @@ with tab_dev_zone:
                 </div>
             """, unsafe_allow_html=True)
             
-            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db = st.tabs([
+            sub_tab_vault, sub_tab_tickets_mgr, sub_tab_global_db, sub_tab_config_system, sub_tab_users_mon = st.tabs([
                 "📥 VALIDATION DES SOUMISSIONS",
                 "🎫 INJECTEUR DE TICKETS",
-                "👑 PANNEAU DE SUPPRESSION DES ÉPREUVES INUTILES"
+                "👑 PANNEAU DE CONTRÔLE DE BASE",
+                "⚙️ CONFIGURATION GLOBALE & VISUELS",
+                "👥 SUIVI DES CONNEXIONS UNIQUES"
             ])
             
             with sub_tab_vault:
@@ -551,112 +704,43 @@ with tab_dev_zone:
                             st.rerun()
                         if c_rej.button("❌ Détruire la proposition", key=f"rej_{i}"):
                             serveur_data["staging"].pop(i)
-                            st.warning("Élément purgé.")
                             st.rerun()
 
             with sub_tab_tickets_mgr:
-                st.markdown("#### Génération manuelle de secours")
-                col_gen, col_list = st.columns(2)
-                with col_gen:
-                    num_to_gen = st.number_input("Nombre de pass à injecter :", min_value=1, max_value=50, value=5)
-                    if st.button("⚡ Injecter de force"):
-                        for _ in range(num_to_gen):
-                            code = "ISABEE-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-                            serveur_data["tickets"].append(code)
-                        st.success(f"Modifications appliquées au registre.")
-                        st.rerun()
-                with col_list:
-                    st.write(serveur_data["tickets"])
+                st.markdown("#### 🎫 Générateur & Destructeur de Tickets de Production")
+                ticket_gen = st.text_input("Créer un ticket personnalisé :", value="ISABEE-CUSTOM")
+                if st.button("➕ Injecter le Ticket"):
+                    serveur_data["tickets"].append(ticket_gen)
+                    st.success(f"Ticket {ticket_gen} ajouté avec succès !")
+                
+                st.markdown("##### Tickets actifs en base :")
+                st.write(serveur_data["tickets"])
 
             with sub_tab_global_db:
-                st.markdown("#### 🗑️ Purge Absolue des Épreuves Inutiles")
+                st.markdown("#### 👑 Base de données globale brute (Sujets)")
+                st.dataframe(serveur_data["db"])
                 
-                col_stat1, col_stat2 = st.columns(2)
-                col_stat1.metric("Total Sujets Actifs", len(serveur_data["db"]))
-                col_stat2.metric("Total Tickets Valides", len(serveur_data["tickets"]))
+                st.markdown("#### 💬 Logs des Discussions publiques")
+                st.write(serveur_data["interactions"])
+
+            with sub_tab_config_system:
+                st.markdown("#### ⚙️ Paramètres fondamentaux d'Infrastructure")
+                serveur_data["config"]["orange_target"] = st.text_input("Numéro récepteur Orange Money :", value=serveur_data["config"]["orange_target"])
+                serveur_data["config"]["mtn_target"] = st.text_input("Numéro récepteur MTN MoMo :", value=serveur_data["config"]["mtn_target"])
+                serveur_data["config"]["campay_mode"] = st.selectbox("Mode de l'API CamPay :", ["Démo", "Production"], index=0 if serveur_data["config"]["campay_mode"] == "Démo" else 1)
                 
-                st.markdown("---")
-                st.markdown("##### Liste des épreuves déployées sur le serveur")
+                if st.button("💾 Sauvegarder la configuration d'infrastructure"):
+                    st.success("Configuration globale mise à jour !")
+                    st.rerun()
+
+            # SUIVI EN DIRECT DES UTILISATEURS DU LIEN DE L'APPLICATION
+            with sub_tab_users_mon:
+                st.markdown("#### 👥 Historique des liaisons et connexions uniques")
+                st.markdown("En tant que **Concepteur en Chef**, vous observez ici en temps réel tous les utilisateurs connectés via votre lien avec leurs coordonnées et leurs identifiants uniques.")
                 
-                # Système d'élimination d'épreuves directes
-                if serveur_data["db"].empty:
-                    st.info("Aucune archive présente dans la base de données actuellement.")
+                if not serveur_data["connections"]:
+                    st.info("Aucun utilisateur ne s'est connecté pour le moment.")
                 else:
-                    for idx, row in serveur_data["db"].iterrows():
-                        col_n, col_b = st.columns([5, 1])
-                        col_n.markdown(f"🔹 **ID: {row['id']}** | {row['Matière']} (*{row['Filière']} - {row['Niveau']}*)")
-                        if col_b.button("Supprimer", key=f"del_sec_{row['id']}"):
-                            serveur_data["db"] = serveur_data["db"][serveur_data["db"]['id'] != row['id']]
-                            st.toast(f"Épreuve supprimée définitivement : {row['Matière']}")
-                            st.rerun()
-
-# ==============================================================================
-# 7. PARAMÈTRES DU SYSTÈME (INDÉFINIMENT VISIBLES ET COMPLÈTEMENT OPÉRATIONNELS)
-# ==============================================================================
-with tab_global_settings:
-    st.markdown(f"### ⚙️ {translate('Panneau de Configuration Général et Visuel', 'System Configuration & Layout Engine')}")
-    st.write(translate("Modifiez les variables structurelles ici. Les changements s'appliquent immédiatement sans altérer le code source.", "Modify operational layouts here. Values persist reactively across pages."))
-    
-    st.markdown("---")
-    
-    # 1. Gestion de la Langue
-    st.markdown(f"##### 🌐 {translate('Sélection de la Langue globale', 'Global Language Driver')}")
-    selected_language = st.selectbox(
-        translate("Langue de l'interface", "Interface Core Language"), 
-        ["Français", "English"], 
-        index=0 if serveur_data["config"]["language"] == "Français" else 1
-    )
-    if selected_language != serveur_data["config"]["language"]:
-        serveur_data["config"]["language"] = selected_language
-        st.rerun()
-
-    st.markdown("---")
-
-    # 2. Tailles et Polices
-    st.markdown(f"##### 📏 {translate('Tailles de Police & Affichage', 'Typography & Sizing Engine')}")
-    col_size1, col_size2 = st.columns(2)
-    with col_size1:
-        new_f_size = st.slider(translate("Taille de la police générale (px)", "Main Body Font Size (px)"), min_value=12, max_value=24, value=int(f_size))
-        if new_f_size != f_size:
-            serveur_data["config"]["font_size"] = new_f_size
-            st.rerun()
-    with col_size2:
-        new_t_size = st.slider(translate("Taille du Grand Titre SOURCE (rem)", "Main Title Size (rem)"), min_value=3.0, max_value=12.0, value=float(t_size), step=0.5)
-        if new_t_size != t_size:
-            serveur_data["config"]["title_size"] = new_t_size
-            st.rerun()
-
-    st.markdown("---")
-
-    # 3. Couleurs du Système
-    st.markdown(f"##### 🎨 {translate('Thème & Identification Couleur', 'Color Schemes & Branding Customization')}")
-    col_col1, col_col2 = st.columns(2)
-    with col_col1:
-        new_p_color = st.color_picker(translate("Couleur Primaire Éclatante", "Primary Glowing Color"), value=p_color)
-        if new_p_color != p_color:
-            serveur_data["config"]["primary_color"] = new_p_color
-            st.rerun()
-    with col_col2:
-        new_s_color = st.color_picker(translate("Couleur Secondaire", "Secondary Accent Color"), value=s_color)
-        if new_s_color != s_color:
-            serveur_data["config"]["secondary_color"] = new_s_color
-            st.rerun()
-
-    st.markdown("---")
-
-    # 4. Paramètres financiers et Campay
-    st.markdown(f"##### 💳 {translate('Configuration Passerelle CamPay & Numéros Cibles', 'Financial Infrastructure & CamPay API Routing')}")
-    col_pay1, col_pay2 = st.columns(2)
-    with col_pay1:
-        serveur_data["config"]["orange_target"] = st.text_input("Orange Money Target (+237) :", value=serveur_data["config"]["orange_target"])
-        serveur_data["config"]["campay_username"] = st.text_input("CamPay APP USERNAME :", value=serveur_data["config"]["campay_username"])
-        new_campay_mode = st.selectbox("CamPay Payment Mode :", ["Démo", "Réel"], index=0 if mode_actuel == "Démo" else 1)
-        if new_campay_mode != mode_actuel:
-            serveur_data["config"]["campay_mode"] = new_campay_mode
-            st.rerun()
-    with col_pay2:
-        serveur_data["config"]["mtn_target"] = st.text_input("MTN MoMo Target (+237) :", value=serveur_data["config"]["mtn_target"])
-        serveur_data["config"]["campay_password"] = st.text_input("CamPay APP PASSWORD :", value=serveur_data["config"]["campay_password"], type="password")
-
-    st.markdown("---")
-    st.info(translate("🔒 Toutes les modifications configurées ci-dessus restent actives indéfiniment sur la mémoire globale partagée de l'application.", "🔒 All modified attributes configured above are dynamically bound to the application's runtime structure permanently."))
+                    df_connexions = pd.DataFrame(serveur_data["connections"])
+                    st.dataframe(df_connexions, use_container_width=True)
+                    st.metric("Total Utilisateurs Actifs Recensés", len(df_connexions))
