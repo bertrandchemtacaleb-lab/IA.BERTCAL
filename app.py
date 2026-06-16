@@ -78,7 +78,7 @@ st.set_page_config(
 
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&family=JetBrains+Mono:wght=400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
     
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stMain, [data-testid="stSidebar"], [data-testid="stSidebarUserContent"] {{
         background: #010D08 !important;
@@ -86,11 +86,11 @@ st.markdown(f"""
         color: #FFFFFF !important;
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: {f_size}px !important;
-    }
+    }}
     
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
         color: #FFFFFF !important;
-    }
+    }}
     
     .glow-title {{
         font-size: {t_size}rem !important;
@@ -101,19 +101,19 @@ st.markdown(f"""
         text-transform: uppercase;
         letter-spacing: -2px;
         text-shadow: 0 0 20px {p_color}, 0 0 40px rgba(16, 185, 129, 0.4);
-    }
+    }}
     @media (max-width: 768px) {{ .glow-title {{ font-size: 2.5rem !important; }} }}
     
     .glow-subtitle {{
         text-align: center; font-size: 1.2rem; color: #A7F3D0; margin-bottom: 30px; font-weight: 500; opacity: 0.9;
-    }
+    }}
     
     .welcome-banner {{
         background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 50%, rgba(16, 185, 129, 0.1) 100%);
         border: 1px solid {p_color};
         padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 40px;
         box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
-    }
+    }}
     
     .welcome-text {{ font-size: 1.8rem !important; font-weight: 700; color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }}
 
@@ -123,28 +123,28 @@ st.markdown(f"""
         border: 1px solid rgba(16, 185, 129, 0.25) !important;
         border-radius: 14px !important;
         padding: 16px 24px !important; font-size: 1.05rem !important; font-weight: 700 !important; color: #E5E7EB !important;
-    }
+    }}
     .stTabs [aria-selected="true"] {{
         background: linear-gradient(90deg, {p_color} 0%, {s_color} 100%) !important;
         color: #FFFFFF !important; border-color: #34D399 !important;
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
-    }
+    }}
 
     .big-logo-box {{
         background: rgba(255, 255, 255, 0.02) !important; border: 2px dashed {p_color} !important;
         border-radius: 12px; padding: 20px 5px; text-align: center; color: #34D399 !important; font-weight: 800; font-size: 0.8rem;
-    }
+    }}
 
     .sidebar-blue-footer {{
         border-top: 1px solid rgba(56, 189, 248, 0.2); padding-top: 20px; margin-top: 40px;
         font-size: 0.88rem; line-height: 1.6; color: #38BDF8 !important; text-align: center !important;
-    }
+    }}
     .sidebar-blue-footer b, .sidebar-blue-footer strong {{ color: #00E5FF !important; }}
 
     .glass-card {{
         background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(16, 185, 129, 0.15);
         border-radius: 16px; padding: 22px; margin-bottom: 20px;
-    }
+    }}
     .badge-premium {{ background: linear-gradient(90deg, #F59E0B, #D97706); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }}
     .badge-free {{ background: rgba(16, 185, 129, 0.2); color: #34D399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }}
     
@@ -153,7 +153,7 @@ st.markdown(f"""
         border: 2px solid #8B5CF6 !important;
         border-radius: 16px; padding: 25px; margin-top: 20px;
         box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -339,6 +339,7 @@ if st.session_state.get('show_app_settings', False):
         st.markdown("#### 💾 Données et stockage")
         st.metric("Utilisation du stockage applicatif", "18.4 Mo / Unlimted")
         if st.button("🗑️ Vider le cache de l'application (Purge)"):
+            st.cache_resource.clear()
             st.success("Le cache système a été vidé avec succès.")
         st.toggle("Téléchargements directs en arrière-plan", value=True)
         st.toggle("Sauvegarde et synchronisation automatique avec le serveur", value=True)
@@ -733,7 +734,6 @@ with tab_dev_zone:
                     st.success("Configuration globale mise à jour !")
                     st.rerun()
 
-            # SUIVI EN DIRECT DES UTILISATEURS DU LIEN DE L'APPLICATION
             with sub_tab_users_mon:
                 st.markdown("#### 👥 Historique des liaisons et connexions uniques")
                 st.markdown("En tant que **Concepteur en Chef**, vous observez ici en temps réel tous les utilisateurs connectés via votre lien avec leurs coordonnées et leurs identifiants uniques.")
