@@ -7,7 +7,22 @@ from datetime import datetime
 import time
 import json
 import urllib.request
+import json
+import os
 
+DATA_FILE = "isabee_data.json"
+def sauvegarder_donnees(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+def charger_donnees():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    # Si le fichier n'existe pas, on initialise avec tes valeurs par défaut
+    return initialiser_base_globale()
+
+# Remplace ton "serveur_data = initialiser_base_globale()" par :
+serveur_data = charger_donnees()
 # ==============================================================================
 # 1. LE CERVEAU CENTRALISÉ DE PRODUCTION (PARTAGÉ & PERSISTANT)
 # ==============================================================================
