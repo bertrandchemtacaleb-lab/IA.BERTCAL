@@ -7,20 +7,69 @@ from datetime import datetime
 import time
 import json
 import urllib.request
-import json
+# ==============================================================================
+# BLOC DE CONFIGURATION & PERSISTANCE (À PLACER APRÈS TES IMPORTS)
+# ==============================================================================
 import os
 
 DATA_FILE = "isabee_data.json"
+
+def initialiser_base_globale():
+    """Définit la structure initiale de ta base de données si elle est vide."""
+    base_sujets = pd.DataFrame([
+        {"id": 1, "Cycle": "Cycle Ingénieur", "Filière": "Génie Énergétique", "Niveau": "Ing4", "Matière": "Thermodynamique", "Enseignant": "Dr. Eko", "Type": "Examen", "Année": "2024-2025", "Premium": False, "Downloads": 145, "Date": "12/03/2026", "Favori": False}
+    ])
+    return {
+        "db": base_sujets.to_dict('records'),
+        "tickets": ["ISABEE-99A8", "ISABEE-44B2", "ISABEE-77C1"],
+        "connections": [],
+        "config": {
+            "campay_username": "METS_TON_APP_USERNAME_ICI",
+            "campay_password": "METS_TON_APP_PASSWORD_ICI",
+            "campay_mode": "Démo",
+            "font_size": 16,
+            "title_size": 4.5,
+            "primary_color": "#10B981",
+            "secondary_color": "#059669",
+            "orange_target": "696075660",
+            "mtn_target": "654046792"
+        }
+    }
+
 def sauvegarder_donnees(data):
+    """Sauvegarde l'état actuel de la base dans un fichier JSON."""
     with open(DATA_FILE, "w") as f:
         json.dump(data, f)
+
 def charger_donnees():
+    """Charge les données depuis le fichier JSON ou initialise si inexistant."""
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
             return json.load(f)
-    # Si le fichier n'existe pas, on initialise avec tes valeurs par défaut
-    return initialiser_base_globale()
+    data = initialiser_base_globale()
+    sauvegarder_donnees(data)
+    return data
 
+# Chargement immédiat des données
+serveur_data = charger_donnees()
+
+# --- INITIALISATION DE LA SESSION POUR ÉVITER LES ERREURS ---
+defaults = {
+    'logged_in': False,
+    'is_premium_user': False,
+    'user_email': None,
+    'user_phone': None,
+    'user_uid': None,
+    'show_app_settings': False,
+    'dev_role': None
+}
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+# ==============================================================================
+# FIN DU BLOC DE CONFIGURATION
+# ==============================================================================
 # Remplace ton "serveur_data = initialiser_base_globale()" par :
 serveur_data = charger_donnees()
 # ==============================================================================
